@@ -39,13 +39,13 @@ export default function Projetos() {
     { label: "Estouro real", v: e.estouroRealA + e.emitidoAcimaB, cor: "bg-crit" },
     { label: "Sem BGQ3", v: e.semBGQ3, cor: "bg-hyp" },
   ];
-  const sel = "h-9 rounded-full border border-line bg-card px-3 text-[13px] font-semibold";
+  const sel = "h-10 rounded-full bg-card-alt px-4 text-[13px] font-semibold";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <div>
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-info">2 · Projetos e emissão</p>
-        <h1 className="text-[26px] font-bold leading-tight mt-1">Onde o plano não cabe no BGQ3?</h1>
+        <p className="t-label text-info">Projetos e emissão</p>
+        <h1 className="t-page mt-2">Onde o plano não cabe no BGQ3?</h1>
       </div>
 
       <Card title={`${brl(e.bruta)} acima do teto em ${e.projetos} projetos`}>
@@ -66,18 +66,18 @@ export default function Projetos() {
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-2 no-print">
-          <div className="flex rounded-full border border-line bg-card p-0.5 text-[13px] font-semibold">
+          <div className="flex rounded-full bg-card-alt p-1 text-[13px] font-semibold">
             {(["acima", "saldo"] as const).map((v) => (
               <button key={v} type="button" onClick={() => { setVisao(v); setAcao(""); }}
-                className={`rounded-full px-3 py-1.5 ${visao === v ? "bg-info text-white" : "text-ink-muted"}`}>
+                className={`rounded-full px-3 py-1.5 ${visao === v ? "bg-card text-ink shadow-sm" : "text-ink-faint"}`}>
                 {v === "acima" ? "Acima do teto" : "Com saldo"}
               </button>
             ))}
           </div>
           <label className="relative">
-            <Search size={14} className="absolute left-3 top-2.5 text-ink-faint" aria-hidden />
+            <Search size={14} className="absolute left-3 top-3 text-ink-faint" aria-hidden />
             <input value={busca} onChange={(ev) => setBusca(ev.target.value)} placeholder="Buscar projeto" aria-label="Buscar projeto"
-              className="h-9 w-56 rounded-full border border-line bg-card pl-8 pr-3 text-[13px]" />
+              className="h-10 w-56 rounded-full bg-card-alt pl-8 pr-3 text-[13px]" />
           </label>
           <select className={sel} value={area} onChange={(ev) => setArea(ev.target.value)} aria-label="Área financeira (N4)">
             <option value="">Área: todas</option>

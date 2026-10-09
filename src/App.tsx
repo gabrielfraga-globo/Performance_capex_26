@@ -30,9 +30,9 @@ export const useApp = () => {
 };
 
 const ABAS: { id: Aba; label: string; Icon: typeof Gauge; nivel: string }[] = [
-  { id: "situacao", label: "1 · Situação do orçamento", Icon: Gauge, nivel: "Diretor e gerência" },
-  { id: "projetos", label: "2 · Projetos e emissão", Icon: BarChart3, nivel: "Gerência" },
-  { id: "operacional", label: "3 · Execução e qualidade", Icon: ClipboardList, nivel: "Time de execução" },
+  { id: "situacao", label: "Visão gerencial", Icon: Gauge, nivel: "Diretor e gerência" },
+  { id: "projetos", label: "Projetos e emissão", Icon: BarChart3, nivel: "Gerência" },
+  { id: "operacional", label: "Execução e qualidade", Icon: ClipboardList, nivel: "Time de execução" },
 ];
 
 function abaDaUrl(): Aba {
@@ -48,13 +48,13 @@ export default function App() {
   const [projeto, setProjeto] = useState<string | null>(null);
   const [sobre, setSobre] = useState(false);
   const [tema, setTema] = useState<"light" | "dark">(() => {
-    try { return (localStorage.getItem("tema") as "light" | "dark") || "light"; } catch { return "light"; }
+    try { return (localStorage.getItem("tema-v2") as "light" | "dark") || "dark"; } catch { return "dark"; }
   });
 
   useEffect(() => { loadBundle().then(setB).catch((e) => setErro(String(e.message ?? e))); }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = tema;
-    try { localStorage.setItem("tema", tema); } catch { /* sem storage */ }
+    try { localStorage.setItem("tema-v2", tema); } catch { /* sem storage */ }
   }, [tema]);
   useEffect(() => {
     const f = () => { setProjeto(null); setAba(abaDaUrl()); };
@@ -80,51 +80,43 @@ export default function App() {
   return (
     <AppCtx.Provider value={ctx}>
       <div className="min-h-screen">
-        <header className="sticky top-0 z-40 border-b border-line bg-card/95 backdrop-blur no-print">
-          <div className="mx-auto max-w-[1440px] px-6">
-            <div className="flex items-center gap-4 h-14">
-              <div className="flex items-center gap-2.5">
+        <header className="sticky top-0 z-40 bg-bg/85 backdrop-blur-xl no-print">
+          <div className="mx-auto max-w-[1320px] px-8 pt-5 pb-3">
+            <div className="surface flex h-[72px] items-center gap-6 rounded-2xl px-6">
+              <div className="flex items-center gap-3 min-w-0">
                 <img src="/favicon.svg" alt="" className="h-7 w-7" />
-                <div className="leading-tight">
-                  <div className="text-[15px] font-bold">BG de Reservas · Decisão</div>
-                  <div className="text-[11px] text-ink-faint">CAPEX · MDO, Instalação e Reserva</div>
-                </div>
+                <span className="text-[17px] font-normal tracking-tight">BG de Reservas</span>
               </div>
-              <div className="ml-auto flex items-center gap-1">
+              <nav className="mx-auto flex gap-1 overflow-x-auto" aria-label="Telas">
+                {ABAS.map(({ id, label, nivel }) => (
+                  <button key={id} type="button" onClick={() => ir(id)} title={nivel} aria-current={aba === id ? "page" : undefined}
+                    className={`whitespace-nowrap rounded-xl px-6 py-2.5 text-[13px] font-normal transition ${aba === id ? "bg-card-alt text-ink" : "text-ink-faint hover:text-ink-muted"}`}>
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setSobre(true)} title={b.meta.avisos.length ? b.meta.avisos.join("\n") : "Dados do modelo, extração sem pendências"}
-                  className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[12px] font-semibold text-ink-muted hover:bg-card-alt tabular">
-                  <span className={`h-2 w-2 rounded-full ${b.meta.avisos.length ? "bg-warn" : "bg-ok"}`} aria-hidden />
-                  Dados de {dataBR(b.meta.dataReferencia)} · caixa {mes(p.mesCorrenteCaixa)}
+                  className="flex items-center gap-2 rounded-xl border border-line px-3.5 py-2 text-[12px] font-light text-ink-muted hover:text-ink tabular">
+                  <span className={`h-1.5 w-1.5 rounded-full ${b.meta.conferencia && !b.meta.conferencia.ok ? "bg-crit" : b.meta.avisos.length ? "bg-warn" : "bg-ok"}`} aria-hidden />
+                  {dataBR(b.meta.dataReferencia)} · caixa {mes(p.mesCorrenteCaixa)}
                   {b.meta.avisos.length > 0 && <span className="sr-only">({b.meta.avisos.length} avisos)</span>}
                 </button>
-                <button type="button" onClick={() => setTema(tema === "light" ? "dark" : "light")} className="rounded-md p-2 text-ink-muted hover:bg-card-alt" aria-label="Alternar tema">
-                  {tema === "light" ? <Moon size={16} /> : <Sun size={16} />}
+                <button type="button" onClick={() => setTema(tema === "light" ? "dark" : "light")} className="rounded-xl border border-line p-2.5 text-ink-faint hover:text-ink" aria-label="Alternar tema">
+                  {tema === "light" ? <Moon size={15} /> : <Sun size={15} />}
                 </button>
               </div>
             </div>
-            <nav className="flex gap-1 overflow-x-auto -mb-px" aria-label="Telas">
-              {ABAS.map(({ id, label, Icon, nivel }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => ir(id)}
-                  title={nivel}
-                  className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-[13.5px] font-semibold ${aba === id ? "border-info text-ink" : "border-transparent text-ink-muted hover:text-ink"}`}
-                >
-                  <Icon size={15} aria-hidden /> {label}
-                </button>
-              ))}
-            </nav>
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1440px] px-6 py-6">
+        <main className="mx-auto max-w-[1320px] px-8 pt-12 pb-24">
           {aba === "situacao" && <Situacao />}
           {aba === "projetos" && <Projetos />}
           {aba === "operacional" && <Operacional />}
         </main>
 
-        <footer className="mx-auto max-w-[1440px] px-6 pb-8 text-[11px] text-ink-faint">
+        <footer className="mx-auto max-w-[1320px] px-8 pb-8 text-[11px] text-ink-faint">
           Fonte: modelo "[SM] Acompanhamento Mensal Caixa", extração de {dataBR(b.meta.dataReferencia)}. Recomendações não são decisões aprovadas.
         </footer>
       </div>

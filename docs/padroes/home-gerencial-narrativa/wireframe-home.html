@@ -1,0 +1,78 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Wireframe Home gerencial</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#1d2330;--mut:#6b7280;--faint:#9aa1ad;--line:#e3e6eb;--ph:#eceef2;--crit:#c0392b;--ok:#1e8e5a;--warn:#b7791f;--info:#2563eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.4 Inter,system-ui,sans-serif;color:var(--ink)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 32px 40px}
+.top{display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700;font-size:16px}.tabs{display:flex;gap:6px}.tab{padding:8px 14px;border-radius:10px;color:var(--mut);font-weight:600;font-size:13px}.tab.on{background:var(--ink);color:#fff}
+.chip{border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:12px;color:var(--mut);background:var(--card)}
+h1{font-size:30px;margin:26px 0 4px}.sub{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+.filters{display:flex;gap:8px}.f{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;color:var(--mut)}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.concl{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--crit);border-radius:14px;padding:18px 22px;display:flex;gap:14px;align-items:center}
+.dot{width:14px;height:14px;border-radius:99px;background:var(--crit);flex:none}
+.concl b{font-size:22px}.concl span{color:var(--mut)}
+.row{display:grid;gap:16px;margin-top:16px}.r2{grid-template-columns:2fr 1fr}.r3{grid-template-columns:1fr 1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.flow{display:grid;grid-template-columns:1fr 24px 1fr 24px 1fr;align-items:center;margin-top:14px}
+.step .v{font-size:28px;font-weight:700;margin-top:4px}.arrow{text-align:center;color:var(--faint);font-size:20px}
+.ph{display:inline-block;background:var(--ph);border-radius:6px;color:var(--faint);padding:0 8px}
+.bar{height:34px;border-radius:8px;margin-top:16px;display:flex;overflow:hidden;background:var(--ph)}
+.bar div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
+.req{font-size:11px;font-weight:700;color:var(--warn);background:#fdf3e1;border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:middle}
+.rail .k{padding:12px 0;border-bottom:1px solid var(--line)}.rail .k:last-child{border:0}.rail .v{font-size:26px;font-weight:700}
+.it{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.it:last-child{border:0}.nm{font-weight:600}.sb{height:8px;border-radius:99px;margin-top:5px}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.hd h3{margin:0;font-size:17px}
+.toggle{font-size:11px;border:1px solid var(--line);border-radius:7px;padding:3px 8px;color:var(--mut);font-weight:600}
+.dec{margin-top:12px;background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;font-size:13px}
+.link{color:var(--info);font-weight:600;font-size:13px;margin-top:10px;display:block}
+.eq{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:15px}.eq b{font-size:18px}
+.note{margin-top:22px;font-size:12px;color:var(--mut)}
+</style></head><body><div class="wrap">
+<div class="top"><div class="brand">▮▮ BG de Reservas</div>
+<div class="tabs"><span class="tab on">Visão gerencial</span><span class="tab">Projetos e emissão</span><span class="tab">Execução e qualidade</span></div>
+<span class="chip">● Dados de dd/mm · caixa mmm/aa</span></div>
+
+<h1>A demanda cabe no orçamento?</h1>
+<div class="sub"><div class="filters"><span class="f">Rubrica ▾</span><span class="f">Área (N4) ▾</span><span class="f">Responsável ▾</span><span class="f">Horizonte ▾</span></div><span class="f">BGQ3 ▾</span></div>
+
+<div class="lbl">Bloco 1 · Situação</div>
+<div class="concl" style="margin-top:6px"><span class="dot"></span><div><b>[🔴 Déficit | 🟡 Equilíbrio com pouca margem | 🟢 Coberta] entre orçamento disponível e demanda futura.</b><br><span>Resultado de <span class="ph">R$ —</span> até <span class="ph">mês</span>. Maior falta em <span class="ph">área</span>.</span></div></div>
+
+<div class="row r2">
+ <div class="card"><div class="lbl">Bloco 2 · Como chegamos a esta conclusão <span class="req">aguarda V01–V03 + OQ-H1</span></div>
+  <div class="flow">
+   <div class="step"><div class="lbl">Orçamento disponível</div><div class="v"><span class="ph">R$ —</span></div><div class="note" style="margin:2px 0 0">BG − já pago − NF já planejada</div></div><div class="arrow">−</div>
+   <div class="step"><div class="lbl">Demanda futura</div><div class="v"><span class="ph">R$ —</span></div><div class="note" style="margin:2px 0 0">terceiros ainda não cobertos por NF</div></div><div class="arrow">=</div>
+   <div class="step"><div class="lbl">Resultado</div><div class="v" style="color:var(--crit)"><span class="ph">± R$ —</span></div><div class="note" style="margin:2px 0 0">sobra (+) ou falta (−)</div></div>
+  </div>
+  <div class="bar"><div style="width:58%;background:#94a3b8">Orçamento disponível</div><div style="width:30%;background:#64748b">Demanda coberta</div><div style="width:12%;background:var(--crit)">Falta</div></div>
+ </div>
+ <div class="card rail"><div class="lbl">Consequência</div>
+  <div class="k"><div class="lbl">Cobertura</div><div class="v"><span class="ph">— meses</span><span class="req">OQ-H2</span></div></div>
+  <div class="k"><div class="lbl">Horizonte do orçamento</div><div class="v" style="font-size:20px">jan/26 → <span class="ph">mmm/aa</span></div></div>
+  <div class="k"><div class="lbl">Demanda sem área (sem NF)</div><div class="v" style="font-size:20px"><span class="ph">R$ —</span></div></div>
+ </div>
+</div>
+
+<div class="row r3">
+ <div class="card"><div class="hd"><h3>Onde sobra</h3><span class="toggle">Área | Rubrica</span></div>
+  <div class="it"><div><div class="nm">Área A</div><div class="sb" style="width:100%;background:var(--ok)"></div></div><div style="text-align:right;color:var(--ok);font-weight:700">+ R$ —</div></div>
+  <div class="it"><div><div class="nm">Área B</div><div class="sb" style="width:35%;background:var(--ok)"></div></div><div style="text-align:right;color:var(--ok);font-weight:700">+ R$ —</div></div>
+  <div class="it"><div><div class="nm">Área D</div><div class="sb" style="width:20%;background:var(--ok)"></div></div><div style="text-align:right;color:var(--ok);font-weight:700">+ R$ —</div></div>
+  <span class="link">Ver projetos com saldo →</span></div>
+ <div class="card"><div class="hd"><h3>Onde falta</h3><span class="toggle">Área | Rubrica</span></div>
+  <div class="it"><div><div class="nm">Área C</div><div class="sb" style="width:100%;background:var(--crit)"></div></div><div style="text-align:right;color:var(--crit);font-weight:700">− R$ —</div></div>
+  <div class="it"><div><div class="nm">Sem área (sem NF)</div><div class="sb" style="width:70%;background:var(--crit)"></div></div><div style="text-align:right;color:var(--crit);font-weight:700">− R$ —</div></div>
+  <div class="it"><div><div class="nm">Área E</div><div class="sb" style="width:25%;background:var(--crit)"></div></div><div style="text-align:right;color:var(--crit);font-weight:700">− R$ —</div></div>
+  <span class="link">Ver projetos impactados →</span></div>
+ <div class="card"><div class="hd"><h3>Podemos resolver?</h3><span class="req">regra de remanejamento: OQ-R1</span></div>
+  <div class="eq"><span>Sobras</span><b style="color:var(--ok)">+ R$ —</b></div>
+  <div class="eq"><span>Faltas</span><b style="color:var(--crit)">− R$ —</b></div>
+  <div class="eq" style="border-top:1px solid var(--line)"><span>Depois de remanejar</span><b><span class="ph">± R$ —</span></b></div>
+  <div class="dec">Decisão: <span style="opacity:.75">[remanejar de A para C] · [definir projeto da demanda sem NF] · [pedir reforço de R$ —]</span></div>
+ </div>
+</div>
+<p class="note">Wireframe: nenhum valor preenchido. Cada placeholder só recebe número depois da consulta de validação indicada (V01–V03) e da decisão da regra (OQ-H1, OQ-H2, OQ-R1).</p>
+</div></body></html>

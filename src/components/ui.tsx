@@ -6,14 +6,14 @@ export function Card({ title, subtitle, action, children, className = "", tone }
   title?: string; subtitle?: ReactNode; action?: ReactNode; children: ReactNode; className?: string;
   tone?: "crit" | "warn" | "info";
 }) {
-  const border = tone === "crit" ? "border-crit/40" : tone === "warn" ? "border-warn/40" : "border-line";
+  const border = tone === "crit" ? "ring-1 ring-crit/30" : tone === "warn" ? "ring-1 ring-warn/30" : "";
   return (
-    <section className={`rounded-card border ${border} bg-card shadow-card p-5 flex flex-col ${className}`}>
+    <section className={`surface rounded-card ${border} p-8 flex flex-col ${className}`}>
       {(title || action) && (
-        <header className="flex items-start justify-between gap-3 mb-4">
+        <header className="flex items-start justify-between gap-3 mb-6">
           <div>
-            {title && <h3 className="text-[12px] font-bold uppercase tracking-[0.06em] text-ink-muted">{title}</h3>}
-            {subtitle && <p className="text-[12px] text-ink-faint mt-1">{subtitle}</p>}
+            {title && <h3 className="t-block">{title}</h3>}
+            {subtitle && <p className="text-[13px] text-ink-muted mt-1">{subtitle}</p>}
           </div>
           {action}
         </header>

@@ -5,6 +5,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseCsv, missingColumns } from "./lib/csv.mjs";
 import { orcamentoPorArea, demandaPorArea } from "./lib/areas.mjs";
+import { sustentacao, perfilAtribuicao } from "./lib/sustentacao.mjs";
+import { conferir } from "./lib/conferencia.mjs";
 import {
   addMes, caixaMensal, cobertura, linhaDoTempo, aplicarCorrecoes, montarRcs, classificarMocks,
   montarProjetos, perdas, agenda, filas,
@@ -80,6 +82,7 @@ export function construir(dados, p) {
     mocks: mocks.filter((m) => m.tipo),
     agenda: agenda({ rcs, projetos, mocks, cobMDO, cobRes, p }),
     filas: corpoFilas,
+    sustentacao: { ...sustentacao(dados.D02, dados.D05a, p.ciclo, p.mesCorrenteCaixa, dados.D05b), atribuicao: perfilAtribuicao(dados.D05a, dados.D05b, p.ciclo, p.mesCorrenteCaixa) },
     areas: (() => {
       const orc = orcamentoPorArea(dados.D02);
       const dem = demandaPorArea(dados.D05a, dados.D05b, p.mesCorrenteCaixa);
@@ -118,11 +121,20 @@ function main() {
   if (extracao?.manual) avisos.push("Dados exportados manualmente em momentos diferentes (ver Sobre os dados). Para prestar contas, rode scripts/atualizar-dados.ps1: uma extração única do modelo, com data e hora.");
   if (!extracao) avisos.push("Sem _extracao.json: data de referência = data do build. Use scripts/atualizar-dados.ps1 para extrair do Power BI.");
   const corpo = construir(dados, p);
+  const conferencia = conferir(dados, p.ciclo);
+  for (const c of conferencia.itens.filter((x) => !x.ok)) {
+    avisos.unshift(`Conferência com o modelo falhou: ${c.nome} difere em ${c.diferenca.toFixed(2)} (meses ${c.mesesDivergentes.join(", ")}). Os números do painel não devem ser apresentados até corrigir.`);
+  }
   const bundle = {
-    meta: { geradoEm: new Date().toISOString(), dataReferencia: p.dataReferencia, extracao, fontes, avisos },
+    meta: { geradoEm: new Date().toISOString(), dataReferencia: p.dataReferencia, extracao, fontes, avisos, conferencia },
     ...corpo,
   };
   fs.writeFileSync(path.join(dataDir, "bundle.json"), JSON.stringify(bundle));
+  console.log(`  conferência com o modelo: ${conferencia.ok ? "OK" : "FALHOU"} (${conferencia.itens.map((x) => `${x.nome} ${x.ok ? "ok" : "≠"}`).join(" · ")})`);
+  if (!conferencia.ok && process.env.BGR_ESTRITO === "1") {
+    console.error("Conferência falhou em modo estrito: interrompendo.");
+    process.exit(2);
+  }
   const c = corpo.cobertura;
   console.log(`bundle.json gerado (${(JSON.stringify(bundle).length / 1024).toFixed(0)} KB) · referência ${p.dataReferencia}`);
   console.log(`  Reservas: BGQ3 ${(c.RESERVAS.bgq3 / 1e6).toFixed(2)} mi · realizado ${(c.RESERVAS.realizado / 1e6).toFixed(2)} mi · orçamento livre ${(c.RESERVAS.orcamentoLivre / 1e6).toFixed(2)} mi`);

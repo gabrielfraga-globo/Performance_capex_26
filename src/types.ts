@@ -10,6 +10,8 @@ export interface Parametros {
   limiarExcesso: number;
   correcoes: { rc: string; campo: string; valor: number; motivo: string }[];
   naoDecidido: { id: string; tema: string; efeito: string }[];
+  decididos?: { id: string; decisao: string }[];
+  ciclo: { de: number; ate: number };
 }
 
 export interface MesCaixa {
@@ -76,7 +78,8 @@ export interface ItemFila {
 export interface Fonte { id: string; arquivo: string; uso: string; linhas: number; atualizadoEm: string | null; presente: boolean }
 
 export interface Bundle {
-  meta: { geradoEm: string; dataReferencia: string; extracao: { data: string; extraidoEm: string; origem: string } | null; fontes: Fonte[]; avisos: string[] };
+  meta: { geradoEm: string; dataReferencia: string; extracao: { data: string; extraidoEm: string; origem: string } | null; fontes: Fonte[]; avisos: string[];
+    conferencia?: { ok: boolean; itens: { nome: string; ok: boolean; total: number; diferenca: number; mesesDivergentes: number[] }[] } };
   parametros: Parametros;
   correcoesAplicadas: { rc: string; campo: string; valor: number; motivo: string; de: number; IdPPM: string }[];
   cobertura: Record<Escopo, Cobertura>;
@@ -91,6 +94,7 @@ export interface Bundle {
   mocks: Mock[];
   agenda: ItemAgenda[];
   filas: ItemFila[];
+  sustentacao: import("./lib/sustentacao").Sustentacao;
   areas: {
     orcamento: OrcArea[];
     projetos: { idPPM: string; projeto: string; n4: string; bgq3: number; pago: number; futuro: number }[];

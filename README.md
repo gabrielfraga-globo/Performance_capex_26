@@ -97,3 +97,19 @@ npm run build      # prebuild (bundle.json) + tsc + vite build → dist/
 - O BGQ1 de 2027 está concentrado em mar/27: compare BGQ1 × BGQ3 só no total anual.
 - Status de ação, prazo e "acompanhar execução" exigem gravação (write-back): Power Apps, lista SharePoint ou a plataforma Gestão de Terceiros.
 - Reprogramação de caixa não está no simulador (falta a regra de deslocamento de NFs).
+
+## Atualizar os dados (sem API do Power BI)
+
+O painel lê o mesmo modelo semântico do BI, aberto no **Power BI Desktop**: o Desktop roda um Analysis Services local e o script consulta esse serviço pela porta local, sem passar pela API do Power BI Service.
+
+1. Abra o PBIP `[SM] Acompanhamento Mensal Caixa` no Power BI Desktop e clique em **Atualizar** (traz SharePoint e banco do dia).
+2. Dê dois cliques em **`atualizar.cmd`** (ou `atualizar-e-publicar.cmd` para já publicar na Vercel).
+
+O script:
+- encontra sozinho o modelo aberto (porta local);
+- roda as 11 consultas `public/data/*.dax` com as medidas do próprio modelo e grava os CSVs (`;` e decimal `,`);
+- grava `public/data/_extracao.json` com data e hora (vira a data de referência do painel);
+- **confere a fidelidade**: as consultas abertas (D02 por área/projeto e D05a por profissional) precisam fechar mês a mês com a consulta agregada R26. Se não fecharem, nada é gerado nem publicado;
+- gera o site (`npm run build`) e, no modo publicar, roda `vercel --prod`.
+
+Se o PowerShell estiver bloqueado na máquina, o caminho manual continua válido: rode cada `.dax` de `public/data` no DAX Query View ou DAX Studio e salve o CSV com o mesmo nome. A conferência roda igual no `npm run build`.

@@ -1,0 +1,49 @@
+// ---------------------------------------------------------------------
+// V02 – NF futura válida (não realizada) por mês de CAIXA, área financeira (N4) e vínculo com a demanda
+//   Pergunta: quanto da NF futura é de profissional com linha de demanda, quanto não tem linha,
+//   e quanto está em mês de caixa SEM BG (horizonte – OQ-H2).
+//   Escopo igual à D02: Reservas, CAPEX, sem "Não encontrado", sem position OPERACIONAL.
+// ---------------------------------------------------------------------
+EVALUATE
+VAR nfs =
+    CALCULATETABLE (
+        ADDCOLUMNS (
+            SELECTCOLUMNS (
+                FILTER (
+                    ListaNFsConsolidada,
+                    ListaNFsConsolidada[ValorRealizadoConecta] = 0
+                        && NOT CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                        && NOT CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+                        && ListaNFsConsolidada[ValorPlanejado] <> 0
+                ),
+                "Chave", ListaNFsConsolidada[ChaveTerceiros],
+                "MesCaixa", YEAR ( ListaNFsConsolidada[DataCaixaPrevista] ) * 100 + MONTH ( ListaNFsConsolidada[DataCaixaPrevista] ),
+                "N4", RELATED ( dN4[N4] ),
+                "Planejado", ListaNFsConsolidada[ValorPlanejado]
+            ),
+            "Origem", LOOKUPVALUE ( ListaGestaoTerceiros[Origem de Custeio], ListaGestaoTerceiros[ChaveUnica], [Chave] ),
+            "StatusDemanda", LOOKUPVALUE ( ListaGestaoTerceiros[Status], ListaGestaoTerceiros[ChaveUnica], [Chave] )
+        ),
+        TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, dRubricas[Rubrica] ),
+        TREATAS ( { "CAPEX" }, dNatureza[Natureza] )
+    )
+VAR comVinculo =
+    ADDCOLUMNS (
+        FILTER ( nfs, [Origem] <> "OPERACIONAL" ),
+        "Vinculo",
+            SWITCH (
+                TRUE (),
+                ISBLANK ( [Chave] ), "NF sem profissional",
+                ISBLANK ( [StatusDemanda] ), "Profissional sem linha de demanda",
+                [StatusDemanda] = "Saldo", "Linha de demanda em Saldo",
+                "Com linha de demanda ativa"
+            )
+    )
+RETURN
+    GROUPBY (
+        comVinculo,
+        [MesCaixa], [N4], [Vinculo],
+        "NFs", COUNTX ( CURRENTGROUP (), 1 ),
+        "Planejado", SUMX ( CURRENTGROUP (), [Planejado] )
+    )
+ORDER BY [MesCaixa], [N4], [Vinculo]

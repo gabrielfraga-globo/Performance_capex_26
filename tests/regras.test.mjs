@@ -88,3 +88,94 @@ describe("áreas financeiras (D02 + D05)", () => {
     for (const d of b.areas.demanda) expect(porChave.get(d.k)).toBeCloseTo(d.dem, 2);
   });
 });
+
+describe("sustentação no ciclo abr/26 → mar/27 (OQ-H1, H2, H4)", async () => {
+  const { consolidar } = await import("../src/lib/sustentacao.ts");
+  const s = b.sustentacao;
+  it("demanda por mês de caixa (D05a, com 'Pago') fecha com R26[Demanda_ativa_CAPEX]", () => {
+    const r26 = new Map();
+    for (const r of dados.R26) r26.set(r["Ano Mes Ordem"], (r26.get(r["Ano Mes Ordem"]) ?? 0) + (r.Demanda_ativa_CAPEX ?? 0));
+    for (const mes of [202611, 202612, 202701, 202702, 202703]) {
+      const d = s.linhas.filter((l) => l.mes === mes).reduce((t, l) => t + l.demanda + l.demandaPago, 0);
+      expect(Math.abs(d - r26.get(mes))).toBeLessThan(1);
+    }
+  });
+  it("BGQ3: disponível 12,14 = 28,99 − 15,87 − 0,97; demanda futura 11,70; cobre com +0,44", () => {
+    const k = consolidar(s, "bgq3");
+    expect(mi(k.bg)).toBe(28.99);
+    expect(mi(k.realizado)).toBe(15.87);
+    expect(mi(k.emPagamento)).toBe(0.97);
+    expect(mi(k.disponivel)).toBe(12.14);
+    expect(mi(k.demandaFutura)).toBe(11.7);
+    expect(mi(k.pagoExcluido)).toBe(0.78);
+    expect(k.coberto).toBe(true);
+    expect(k.mesesSustentados).toBe(12);
+    expect(mi(k.alemDoCiclo.nf)).toBe(0.8);
+    expect(k.alemDoCiclo.meses).toEqual([202704]);
+  });
+  it("por rubrica: MDO sobra 1,37; Instalação falta 0,70 (até dez/26); Reserva falta 0,24 (até jan/27)", () => {
+    const m = consolidar(s, "bgq3", "MDO"), i = consolidar(s, "bgq3", "INSTALAÇÃO"), r = consolidar(s, "bgq3", "RESERVA");
+    expect(mi(m.resultado)).toBe(1.37);
+    expect(mi(i.resultado)).toBe(-0.7);
+    expect(i.sustentaAte).toBe(202612);
+    expect(mi(r.resultado)).toBe(-0.24);
+    expect(r.sustentaAte).toBe(202701);
+    expect(m.resultado + i.resultado + r.resultado).toBeCloseTo(consolidar(s, "bgq3").resultado, 2);
+  });
+});
+
+describe("diretoria (N3): orçamento por dN4[N3], demanda por ListaGestaoTerceiros[Diretoria]", async () => {
+  const { consolidar, diretorias } = await import("../src/lib/sustentacao.ts");
+  const s = b.sustentacao;
+  it("duas diretorias; Produção falta 0,66 (11/12 meses) e Entrega sobra 1,09; somam o total", () => {
+    expect(diretorias(s)).toEqual(["Plataformas De Entrega", "Plataformas De Produção"]);
+    const p = consolidar(s, "bgq3", null, "Plataformas De Produção"), e = consolidar(s, "bgq3", null, "Plataformas De Entrega");
+    expect(mi(p.resultado)).toBe(-0.66);
+    expect(p.mesesSustentados).toBe(11);
+    expect(mi(e.resultado)).toBe(1.09);
+    expect(p.resultado + e.resultado).toBeCloseTo(consolidar(s, "bgq3").resultado, 2);
+  });
+  it("série mensal: orçamento acumulado no fim do ciclo = BG do ciclo", () => {
+    const k = consolidar(s, "bgq3");
+    expect(k.serie.at(-1).orcamentoAcum).toBeCloseTo(k.bg, 2);
+  });
+});
+
+describe("perfil de atribuição por área (OQ-A1)", () => {
+  it("1 área 9,27 · várias 1,26 · sem NF 1,18 = demanda futura 11,70", () => {
+    const a = b.sustentacao.atribuicao;
+    expect(mi(a.umaArea)).toBe(9.27);
+    expect(mi(a.variasAreas)).toBe(1.26);
+    expect(mi(a.semNF)).toBe(1.18);
+    expect(mi(a.umaArea + a.variasAreas + a.semNF)).toBe(11.7);
+  });
+});
+
+describe("área (N4) pela área do projeto da RC (OQ-A1, 09/10/2026)", async () => {
+  const { consolidar, areas, SEM_AREA } = await import("../src/lib/sustentacao.ts");
+  const s = b.sustentacao;
+  it("áreas somam o total; 'Sem área' = demanda sem NF R$ 1,18 mi; Exibição sobra 1,30", () => {
+    const lst = areas(s);
+    expect(lst.at(-1)).toBe(SEM_AREA);
+    const soma = lst.reduce((t, a) => t + consolidar(s, "bgq3", null, null, a).resultado, 0);
+    expect(soma).toBeCloseTo(consolidar(s, "bgq3").resultado, 2);
+    const dem = lst.reduce((t, a) => t + consolidar(s, "bgq3", null, null, a).demandaFutura, 0);
+    expect(dem).toBeCloseTo(consolidar(s, "bgq3").demandaFutura, 2);
+    expect(mi(consolidar(s, "bgq3", null, null, SEM_AREA).demandaFutura)).toBe(1.18);
+    expect(mi(consolidar(s, "bgq3", null, null, "PLAT. DE EXIBIÇÃO").resultado)).toBe(1.3);
+  });
+});
+
+describe("simulação de remanejamento (OQ-R1: estudo, não default)", async () => {
+  const { consolidar, comAjuste } = await import("../src/lib/sustentacao.ts");
+  const s = b.sustentacao;
+  it("Entrega → Produção R$ 657 mil: Produção passa a 12/12 meses, Entrega segue coberta, total não muda", () => {
+    const p = consolidar(s, "bgq3", null, "Plataformas De Produção"), e = consolidar(s, "bgq3", null, "Plataformas De Entrega");
+    const v = -p.resultado;
+    const p2 = comAjuste(p, v), e2 = comAjuste(e, -v);
+    expect(p2.resultado).toBeCloseTo(0, 2);
+    expect(p2.mesesSustentados).toBe(12);
+    expect(e2.coberto).toBe(true);
+    expect(p2.resultado + e2.resultado).toBeCloseTo(p.resultado + e.resultado, 2);
+  });
+});

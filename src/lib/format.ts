@@ -17,9 +17,9 @@ export function brl(v: number | null | undefined, casas = 2): string {
   const a = Math.abs(v);
   if (a < 0.5) return "R$ 0";
   const sinal = v < 0 ? "−" : "";
-  if (a >= 1e6) return `${sinal}R$ ${(a / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas })} mi`;
-  if (a >= 1e3) return `${sinal}R$ ${Math.round(a / 1e3).toLocaleString("pt-BR")} mil`;
-  return `${sinal}R$ ${Math.round(a).toLocaleString("pt-BR")}`;
+  if (a >= 1e6) return `${sinal}R$\u00a0${(a / 1e6).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas })}\u00a0mi`;
+  if (a >= 1e3) return `${sinal}R$\u00a0${Math.round(a / 1e3).toLocaleString("pt-BR")}\u00a0mil`;
+  return `${sinal}R$\u00a0${Math.round(a).toLocaleString("pt-BR")}`;
 }
 
 export const brlCheio = (v: number) => `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;

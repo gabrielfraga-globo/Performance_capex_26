@@ -8,7 +8,8 @@
   2. Roda cada consulta public\data\*.dax e grava o CSV ao lado (mesmo formato do
      DAX Query View: separador ";", decimal ",").
   3. Grava public\data\_extracao.json com a data da extração (vira a data de referência do painel).
-  4. Opcional: -Build roda "npm run build"; -Publicar faz commit + push (deploy no Vercel via Git)
+  4. Confere se as consultas abertas fecham com a consulta agregada (R26, medidas do BI); se não fecharem, para.
+  5. Opcional: -Build roda "npm run build"; -Publicar faz commit + push (deploy no Vercel via Git)
      ou "vercel --prod" se -VercelCli for informado.
 
 .EXAMPLE
@@ -22,7 +23,8 @@ param(
   [switch]$Build,
   [switch]$Publicar,
   [switch]$VercelCli,
-  [string]$TabelaAssinatura = "ListaRCsConsolidada"
+  [string]$TabelaAssinatura = "ListaRCsConsolidada",
+  [string[]]$Opcionais = @("D01_responsaveis")
 )
 
 $ErrorActionPreference = "Stop"
@@ -145,12 +147,15 @@ $ext = @{
 $ext | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $dataDir "_extracao.json") -Encoding UTF8
 Write-Host "Extração concluída: $($ext.extraidoEm)"
 
-$falhas = $resumo | Where-Object { $_.erro }
+$falhas = $resumo | Where-Object { $_.erro -and ($Opcionais -notcontains $_.consulta) }
 if ($falhas) { throw "Algumas consultas falharam; o painel não foi gerado. Corrija e rode de novo." }
 
 Push-Location $raiz
 try {
+  # Modo estrito: se D02/D05a não fecharem com a R26 (medidas do BI), nada é gerado nem publicado.
+  $env:BGR_ESTRITO = "1"
   npm run data
+  if ($LASTEXITCODE -eq 2) { throw "Conferência com o modelo falhou (D02/D05a não fecham com a R26). Nada foi publicado. Veja o detalhe acima." }
   if ($LASTEXITCODE -ne 0) { throw "Falha ao gerar bundle.json" }
   if ($Build -or $Publicar) {
     npm run build

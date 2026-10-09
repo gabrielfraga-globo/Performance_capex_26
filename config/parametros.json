@@ -2,6 +2,11 @@
   "_leiaMe": "dataReferencia \"auto\" = data da extração (public/data/_extracao.json) ou, na falta dela, a data do build. As janelas são relativas ao mês corrente de caixa.",
   "dataReferencia": "auto",
   "horizonteMeses": 12,
+  "ciclo": {
+    "de": 202604,
+    "ate": 202703,
+    "_leiaMe": "OQ-H2 (decisão 08/10/2026): ciclo do orçamento abr/26 → mar/27. Caixa depois de mar/27 aparece como 'além do ciclo'."
+  },
   "janelaDemanda": {
     "deslocamento": 0,
     "meses": 5,
@@ -42,10 +47,36 @@
       "efeito": "Não tratadas como dívida."
     },
     {
-      "id": "OQ-N15",
-      "tema": "Horizonte da cobertura (out/26–set/27)",
-      "efeito": "O horizonte aparece no rótulo do indicador."
+      "id": "V03",
+      "tema": "Linhas 'Pago' com caixa futuro contadas como demanda",
+      "efeito": "Valor exibido como ressalva junto à demanda futura até a consulta V03."
     }
   ],
-  "_leiaMe_correcoes": "Vazio por decisão: o painel mostra o dado exatamente como está no BI. Erros de cadastro aparecem na tela 3 (Dado cadastral a corrigir) e devem ser corrigidos na origem."
+  "_leiaMe_correcoes": "Vazio por decisão: o painel mostra o dado exatamente como está no BI. Erros de cadastro aparecem na tela 3 (Dado cadastral a corrigir) e devem ser corrigidos na origem.",
+  "decididos": [
+    {
+      "id": "OQ-H1",
+      "decisao": "Orçamento disponível = BG aprovado − realizado − valores já em pagamento (NF do mês corrente). NF futura dos meses seguintes não é descontada."
+    },
+    {
+      "id": "OQ-H2",
+      "decisao": "Ciclo abr/26 → mar/27. NF e demanda depois de mar/27 aparecem como além do orçamento vigente."
+    },
+    {
+      "id": "OQ-H3",
+      "decisao": "Só dois estados: Coberto e Não coberto. Sem amarelo até existir regra formal."
+    },
+    {
+      "id": "OQ-H4",
+      "decisao": "Cobertura = meses do ciclo sustentados pelo BG total, com o consumo acumulado (realizado, em pagamento e demanda)."
+    },
+    {
+      "id": "OQ-A1",
+      "decisao": "Área (N4) da demanda = área do projeto da RC que paga o profissional. Pago por várias RCs: cada RC leva a sua parte, na proporção do valor da NF. Sem NF = 'Sem área'."
+    },
+    {
+      "id": "OQ-R1",
+      "decisao": "Remanejamento entre rubricas, diretorias e áreas só como estudo simulado, nunca por padrão. Quem aprova: o diretor."
+    }
+  ]
 }

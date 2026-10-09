@@ -36,11 +36,11 @@ export default function Operacional() {
   const qtdDecididas = Object.keys(decisoes).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-info">3 · Execução e qualidade</p>
-          <h1 className="text-[26px] font-bold leading-tight mt-1">O que o time precisa corrigir?</h1>
+          <p className="t-label text-info">Execução e qualidade</p>
+          <h1 className="t-page mt-2">O que o time precisa corrigir?</h1>
         </div>
         {qtdDecididas > 0 && (
           <button type="button" onClick={() => exportarDecisoes(decisoes)} className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-[12px] font-semibold text-info" title="Registro salvo só neste navegador até existir o banco">
@@ -49,28 +49,28 @@ export default function Operacional() {
         )}
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3" role="tablist" aria-label="Pilares">
+      <div className="grid gap-5 md:grid-cols-3" role="tablist" aria-label="Pilares">
         {resumo.map((p) => (
           <button key={p.id} type="button" role="tab" aria-selected={pilar === p.id}
             onClick={() => { setPilar(p.id); setTipo(""); }}
-            className={`rounded-card border p-4 text-left shadow-card ${pilar === p.id ? "border-info bg-info-soft" : "border-line bg-card hover:border-info/50"}`}>
-            <div className="text-[13px] font-semibold text-ink-muted">{p.nome}</div>
-            <div className="mt-1 text-[26px] font-bold tabular leading-tight">{brl(p.v)}</div>
-            <div className="text-[12px] text-ink-faint">{p.n} itens · {p.descricao}</div>
+            className={`surface rounded-card p-7 text-left transition ${pilar === p.id ? "ring-2 ring-info" : "opacity-80 hover:opacity-100"}`}>
+            <div className="t-label">{p.nome}</div>
+            <div className="mt-2 t-num">{brl(p.v)}</div>
+            <div className="mt-2 text-[13px] text-ink-muted">{p.n} itens · {p.descricao}</div>
           </button>
         ))}
       </div>
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-2 no-print">
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de pendência" className="h-9 rounded-full border border-line bg-card px-3 text-[13px] font-semibold">
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de pendência" className="h-10 rounded-full bg-card-alt px-4 text-[13px] font-semibold">
             <option value="">{P.nome}: todos</option>
             {P.tipos.map((t) => <option key={t} value={t}>{t} ({b.filas.filter((f) => f.tipo === t).length})</option>)}
           </select>
           <label className="relative">
-            <Search size={14} className="absolute left-3 top-2.5 text-ink-faint" aria-hidden />
+            <Search size={14} className="absolute left-3 top-3 text-ink-faint" aria-hidden />
             <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar projeto, RC, fornecedor ou responsável" aria-label="Buscar"
-              className="h-9 w-80 rounded-full border border-line bg-card pl-8 pr-3 text-[13px]" />
+              className="h-10 w-80 rounded-full bg-card-alt pl-8 pr-3 text-[13px]" />
           </label>
           <span className="ml-auto text-[13px] text-ink-muted tabular">{linhas.length} itens · <b className="text-ink">{brl(linhas.reduce((s, f) => s + f.valor, 0))}</b></span>
         </div>

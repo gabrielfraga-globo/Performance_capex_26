@@ -1,0 +1,31 @@
+// ---------------------------------------------------------------------
+// V03 – Linhas de demanda com status "Pago" e caixa a partir do mês corrente
+//   Pergunta: essas linhas já estão no realizado do Conecta? Se sim, contá-las como demanda
+//   futura soma o mesmo dinheiro duas vezes. (No D05a de 08/10: R$ 0,78 mi em caixa ≥ nov/26.)
+//   Ajuste a data de corte se rodar em outro mês.
+// ---------------------------------------------------------------------
+DEFINE VAR corte = DATE ( 2026, 10, 1 )
+EVALUATE
+ADDCOLUMNS (
+    SELECTCOLUMNS (
+        FILTER (
+            ListaGestaoTerceiros,
+            ListaGestaoTerceiros[Origem de Custeio] = "CAPEX"
+                && ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" }
+                && ListaGestaoTerceiros[Status] = "Pago"
+                && ListaGestaoTerceiros[DataCaixaPrevista] >= corte
+        ),
+        "Chave", ListaGestaoTerceiros[ChaveUnica],
+        "Competencia", ListaGestaoTerceiros[DataCompetencia],
+        "CaixaPrevista", ListaGestaoTerceiros[DataCaixaPrevista],
+        "Rubrica", ListaGestaoTerceiros[Rubrica],
+        "Demanda", ListaGestaoTerceiros[BGDemanda]
+    ),
+    "NF_realizada",
+        VAR k = [Chave]
+        RETURN SUMX ( FILTER ( ALL ( ListaNFsConsolidada ), ListaNFsConsolidada[ChaveTerceiros] = k ), ListaNFsConsolidada[ValorRealizadoConecta] ),
+    "NF_planejada",
+        VAR k = [Chave]
+        RETURN SUMX ( FILTER ( ALL ( ListaNFsConsolidada ), ListaNFsConsolidada[ChaveTerceiros] = k ), ListaNFsConsolidada[ValorPlanejado] )
+)
+ORDER BY [CaixaPrevista], [Chave]

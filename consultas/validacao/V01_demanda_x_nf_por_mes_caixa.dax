@@ -1,0 +1,57 @@
+// ---------------------------------------------------------------------
+// V01 – Demanda de terceiros × NF vinculada, por mês de CAIXA, rubrica e status
+//   Pergunta: a NF futura planejada é o mesmo dinheiro da demanda?
+//   (decide se a Home subtrai NF futura do orçamento OU conta a demanda inteira – OQ-H1)
+//   Grão: cada linha da ListaGestaoTerceiros (CAPEX, MDO/INSTALAÇÃO/RESERVA, status <> Saldo)
+//   ligada às NFs pela chave profissional-mês-ano (ChaveTerceiros = ChaveUnica).
+//   Mesma regra de NF das R26/D02: "Não encontrado" e realizado <> 0 zeram o planejado.
+// ---------------------------------------------------------------------
+EVALUATE
+VAR linhas =
+    ADDCOLUMNS (
+        SELECTCOLUMNS (
+            FILTER (
+                ListaGestaoTerceiros,
+                ListaGestaoTerceiros[Origem de Custeio] = "CAPEX"
+                    && ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" }
+                    && ListaGestaoTerceiros[Status] <> "Saldo"
+            ),
+            "Chave", ListaGestaoTerceiros[ChaveUnica],
+            "MesCaixa", YEAR ( ListaGestaoTerceiros[DataCaixaPrevista] ) * 100 + MONTH ( ListaGestaoTerceiros[DataCaixaPrevista] ),
+            "Rubrica", ListaGestaoTerceiros[Rubrica],
+            "Status", ListaGestaoTerceiros[Status],
+            "Demanda", ListaGestaoTerceiros[BGDemanda]
+        ),
+        "NF_planejada_valida",
+            VAR k = [Chave]
+            RETURN
+                SUMX (
+                    FILTER (
+                        ALL ( ListaNFsConsolidada ),
+                        ListaNFsConsolidada[ChaveTerceiros] = k
+                            && ListaNFsConsolidada[ValorRealizadoConecta] = 0
+                            && NOT CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                            && NOT CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+                    ),
+                    ListaNFsConsolidada[ValorPlanejado]
+                ),
+        "NF_realizada",
+            VAR k = [Chave]
+            RETURN
+                SUMX (
+                    FILTER ( ALL ( ListaNFsConsolidada ), ListaNFsConsolidada[ChaveTerceiros] = k ),
+                    ListaNFsConsolidada[ValorRealizadoConecta]
+                )
+    )
+RETURN
+    GROUPBY (
+        linhas,
+        [MesCaixa], [Rubrica], [Status],
+        "Linhas", COUNTX ( CURRENTGROUP (), 1 ),
+        "Demanda", SUMX ( CURRENTGROUP (), [Demanda] ),
+        "NF_planejada_valida", SUMX ( CURRENTGROUP (), [NF_planejada_valida] ),
+        "NF_realizada", SUMX ( CURRENTGROUP (), [NF_realizada] ),
+        "Demanda_sem_NF", SUMX ( CURRENTGROUP (), IF ( [NF_planejada_valida] + [NF_realizada] = 0, [Demanda] ) ),
+        "Demanda_acima_da_NF", SUMX ( CURRENTGROUP (), IF ( [NF_planejada_valida] + [NF_realizada] > 0, MAX ( [Demanda] - [NF_planejada_valida] - [NF_realizada], 0 ) ) )
+    )
+ORDER BY [MesCaixa], [Rubrica], [Status]

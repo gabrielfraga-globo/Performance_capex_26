@@ -17,14 +17,24 @@ export default function SobreDados({ open, onClose }: { open: boolean; onClose: 
         </section>
 
         <section>
-          <h4 className="font-bold mb-2">Como a tela 1 calcula</h4>
+          <h4 className="font-bold mb-2">Como a Visão gerencial calcula (ciclo {mes(p.ciclo.de)} → {mes(p.ciclo.ate)})</h4>
           <ul className="list-disc pl-5 space-y-1 text-ink-muted">
-            <li>Saldo para a demanda = orçamento do cenário − pago no Conecta até {mes(p.mesCorrenteCaixa)} − NF já planejada no caixa de {mes(p.mesCorrenteCaixa)}.</li>
-            <li>Demanda = lista de terceiros (CAPEX, status ≠ Saldo), distribuída pela área que paga a NF de cada profissional. Sem NF = "Sem rateio".</li>
-            <li>Área = N4 financeira (dN4). Responsável = gestor N4 da alocação (dim_gestores).</li>
+            <li>Orçamento disponível = BG do ciclo − realizado no Conecta até {mes(p.mesCorrenteCaixa)} − NF em pagamento em {mes(p.mesCorrenteCaixa)}. A NF dos meses seguintes não é descontada.</li>
+            <li>Demanda futura = lista de terceiros (CAPEX, status A Pagar) com caixa previsto depois de {mes(p.mesCorrenteCaixa)} até {mes(p.ciclo.ate)}. Linhas "Pago" ficam fora: a NF delas já está no realizado.</li>
+            <li>Sustentação = meses do ciclo, a partir de {mes(p.ciclo.de)}, em que o consumo acumulado (realizado, mês corrente, demanda) cabe no BG do ciclo.</li>
+            <li>NF depois de {mes(p.ciclo.ate)} aparece como "fora do orçamento vigente" e não entra na conta.</li>
+            <li>Diretoria (N3): orçamento por dN4[N3] e demanda pela diretoria da lista de terceiros (ligadas por aux_n3 no modelo). Em 100% da demanda com NF as duas coincidem.</li>
+            <li>Área (N4): orçamento pelo N4 do projeto (dN4); demanda pela área do projeto da RC que paga o profissional. Pago por várias RCs: cada RC leva a sua parte, na proporção do valor da NF. Sem NF = "Sem área". Filtro de responsável: aguardando regra.</li>
             <li>Ações rápidas (Aprovar, Notificar, Descartar) ficam salvas só neste navegador até existir a camada de banco; use "Exportar registro" na tela 3.</li>
           </ul>
         </section>
+
+        {p.decididos && (
+          <section>
+            <h4 className="font-bold mb-2">Decisões do time (08/10/2026)</h4>
+            <ul className="space-y-1 text-ink-muted">{p.decididos.map((d) => <li key={d.id}><b className="text-ink">{d.id}</b> {d.decisao}</li>)}</ul>
+          </section>
+        )}
 
         <section>
           <h4 className="font-bold mb-2">Regras aplicadas (confirmadas pelo time em 08/10/2026)</h4>
@@ -53,6 +63,17 @@ export default function SobreDados({ open, onClose }: { open: boolean; onClose: 
             <ul className="space-y-1 text-ink-muted">
               {b.correcoesAplicadas.map((c) => <li key={c.rc}><b>{c.rc}</b> ({c.IdPPM}): {c.campo} {brl(c.de)} → {brl(c.valor)}. {c.motivo}</li>)}
             </ul>
+          </section>
+        )}
+
+        {b.meta.conferencia && (
+          <section>
+            <h4 className="font-bold mb-2">Conferência com o modelo {b.meta.conferencia.ok ? "· OK" : "· FALHOU"}</h4>
+            <p className="text-ink-muted mb-2">As consultas abertas por área e profissional (D02, D05a) precisam fechar, mês a mês, com a consulta agregada R26, que usa as medidas do BI.</p>
+            <table className="tbl">
+              <thead><tr><th>Conferência</th><th className="num">Total no ciclo</th><th className="num">Diferença</th></tr></thead>
+              <tbody>{b.meta.conferencia.itens.map((c) => <tr key={c.nome}><td>{c.ok ? "✓" : "✗"} {c.nome}</td><td className="num">{brl(c.total)}</td><td className={`num ${c.ok ? "" : "text-crit"}`}>{c.ok ? "—" : brl(c.diferenca)}</td></tr>)}</tbody>
+            </table>
           </section>
         )}
 
