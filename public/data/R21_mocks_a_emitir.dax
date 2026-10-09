@@ -1,0 +1,60 @@
+// ---------------------------------------------------------------------
+// R21 – Mocks "a emitir" com provável gêmea já emitida
+//       Gêmea = RC emitida, válida, mesmo projeto + fornecedor + rubrica.
+//       "Gemea_valor_igual" = mesma condição E valor planejado igual (±1%).
+// ---------------------------------------------------------------------
+EVALUATE
+VAR Emit =
+    FILTER (
+        ListaRCsConsolidada,
+        NOT ( ListaRCsConsolidada[StatusEmissao] IN { "A EMITIR", "AGUARDANDO CONECTA" } )
+            && ListaRCsConsolidada[NaoEhValida] = FALSE ()
+            && ListaRCsConsolidada[ValorPlanejado] > 0
+    )
+VAR Mock =
+    FILTER (
+        ListaRCsConsolidada,
+        ListaRCsConsolidada[StatusEmissao] IN { "A EMITIR", "AGUARDANDO CONECTA" }
+            && ListaRCsConsolidada[NaoEhValida] = FALSE ()
+    )
+RETURN
+    SELECTCOLUMNS (
+        ADDCOLUMNS (
+            Mock,
+            "@NF_Planejado_no_mock", CALCULATE ( SUM ( ListaNFsConsolidada[ValorPlanejado] ) ),
+            "@Emitido_mesmo_proj_forn_rub",
+                VAR p = ListaRCsConsolidada[IdPPM]
+                VAR f = ListaRCsConsolidada[IdFornecedor]
+                VAR r = ListaRCsConsolidada[IdRubrica]
+                RETURN SUMX (
+                    FILTER ( Emit,
+                        ListaRCsConsolidada[IdPPM] = p
+                            && ListaRCsConsolidada[IdFornecedor] = f
+                            && ListaRCsConsolidada[IdRubrica] = r ),
+                    ListaRCsConsolidada[ValorPlanejado] ),
+            "@Gemea_valor_igual",
+                VAR p = ListaRCsConsolidada[IdPPM]
+                VAR f = ListaRCsConsolidada[IdFornecedor]
+                VAR r = ListaRCsConsolidada[IdRubrica]
+                VAR v = ListaRCsConsolidada[ValorPlanejado]
+                RETURN CONCATENATEX (
+                    FILTER ( Emit,
+                        ListaRCsConsolidada[IdPPM] = p
+                            && ListaRCsConsolidada[IdFornecedor] = f
+                            && ListaRCsConsolidada[IdRubrica] = r
+                            && ABS ( ListaRCsConsolidada[ValorPlanejado] - v ) <= 0.01 * v ),
+                    ListaRCsConsolidada[IdRequisicaoConecta], ", " )
+        ),
+        "IdPPM",           ListaRCsConsolidada[IdPPM],
+        "IdRequisicaoFake", ListaRCsConsolidada[IdRequisicaoFake],
+        "IdRequisicaoConecta", ListaRCsConsolidada[IdRequisicaoConecta],
+        "StatusEmissao",   ListaRCsConsolidada[StatusEmissao],
+        "IdFornecedor",    ListaRCsConsolidada[IdFornecedor],
+        "IdRubrica",       ListaRCsConsolidada[IdRubrica],
+        "Planejado_mock",  ListaRCsConsolidada[ValorPlanejado],
+        "NF_no_mock",      [@NF_Planejado_no_mock],
+        "Emitido_mesmo_proj_forn_rub", [@Emitido_mesmo_proj_forn_rub],
+        "Gemea_valor_igual", [@Gemea_valor_igual],
+        "Modificado",      ListaRCsConsolidada[Modificado]
+    )
+ORDER BY [IdPPM]

@@ -1,0 +1,23 @@
+// ---------------------------------------------------------------------
+// D03 – Demanda futura por área × responsável × rubrica × competência × fornecedor
+//   Traz as duas visões de área da lista de terceiros:
+//     · alocação: IdSetorAlocacao   · custeio: IdDefesaProjeto (→ projeto → N4 do orçamento)
+//   O nome de cada área entra no painel por D04 (dN4) e D01 (dProjetos).
+// ---------------------------------------------------------------------
+EVALUATE
+SUMMARIZECOLUMNS (
+    ListaGestaoTerceiros[IdSetorAlocacao],
+    ListaGestaoTerceiros[IdDefesaProjeto],
+    ListaGestaoTerceiros[Diretoria],
+    dim_gestores[NomeGestorN4],
+    dim_gestores[NomeGestor],
+    ListaGestaoTerceiros[Rubrica],
+    dFornecedores[NomeFornecedor],
+    dCalendarioCompetencia[Ano Mes Ordem],
+    TREATAS ( { "CAPEX" }, ListaGestaoTerceiros[Origem de Custeio] ),
+    TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, ListaGestaoTerceiros[Rubrica] ),
+    FILTER ( ALL ( ListaGestaoTerceiros[Status] ), ListaGestaoTerceiros[Status] <> "Saldo" ),
+    "Demanda", SUM ( ListaGestaoTerceiros[BGDemanda] ),
+    "Positions", DISTINCTCOUNT ( ListaGestaoTerceiros[IdProfissional] )
+)
+ORDER BY dCalendarioCompetencia[Ano Mes Ordem], ListaGestaoTerceiros[Rubrica]

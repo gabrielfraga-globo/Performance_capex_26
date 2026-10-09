@@ -1,0 +1,26 @@
+// ---------------------------------------------------------------------
+// R02 – P1 · Orçamento do projeto x RCs (nível PROJETO)
+//       Orçamento = BGQ3 Vivo (todas as datas de caixa 2026+2027, separado por ano)
+//       RCs não têm data no modelo → comparadas contra o orçamento total
+// ---------------------------------------------------------------------
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        dProjetos[IdPPM],
+        dProjetos[NomeLB],
+        TREATAS ( { "RESERVAS" }, dRubricas[Agrupador] ),
+        "Orc_BGQ3_Total", [BGQ3_Vivo],
+        "Orc_BGQ3_2026",  CALCULATE ( [BGQ3_Vivo], dCalendarioCaixa[Ano] = 2026 ),
+        "Orc_BGQ3_2027",  CALCULATE ( [BGQ3_Vivo], dCalendarioCaixa[Ano] = 2027 ),
+        "RC_Planejado",   SUM ( ListaRCsConsolidada[ValorPlanejado] ),
+        "RC_A_Emitir",    CALCULATE ( SUM ( ListaRCsConsolidada[ValorPlanejado] ), ListaRCsConsolidada[StatusEmissao] = "A EMITIR" ),
+        "RC_Empenho",     SUM ( ListaRCsConsolidada[ValorEmpenhoTotal] ),
+        "RC_Realizado",   SUM ( ListaRCsConsolidada[ValorRealizado] ),
+        "NF_Realizado",   SUM ( ListaNFsConsolidada[ValorRealizadoConecta] ),
+        "NF_Planejado",   SUM ( ListaNFsConsolidada[ValorPlanejado] ),
+        "Qtd_RCs",        COUNTROWS ( ListaRCsConsolidada )
+    ),
+    "Saldo_Orc_vs_RC_Planejado", [Orc_BGQ3_Total] - [RC_Planejado],
+    "Saldo_Orc_vs_NF_Total",     [Orc_BGQ3_Total] - [NF_Realizado] - [NF_Planejado]
+)
+ORDER BY [Saldo_Orc_vs_RC_Planejado] ASC

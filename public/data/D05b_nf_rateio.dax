@@ -1,0 +1,25 @@
+// ---------------------------------------------------------------------
+// D05b – Rateio das NFs de profissionais por projeto e área FINANCEIRA (NF → RC → projeto → dN4)
+//   Liga à D05a por ChaveTerceiros = ChaveUnica (profissional-mês-ano).
+// ---------------------------------------------------------------------
+EVALUATE
+SELECTCOLUMNS (
+    FILTER ( ListaNFsConsolidada, NOT ISBLANK ( ListaNFsConsolidada[IdProfissional] ) ),
+    "ChaveTerceiros", ListaNFsConsolidada[ChaveTerceiros],
+    "ReqCompra", ListaNFsConsolidada[ReqCompra],
+    "IdPPM_NF", ListaNFsConsolidada[IdPPM],
+    "IdPPM_RC", RELATED ( ListaRCsConsolidada[IdPPM] ),
+    "N4", RELATED ( dN4[N4] ),
+    "N3", RELATED ( dN4[N3] ),
+    "RC_NaoEhValida", RELATED ( ListaRCsConsolidada[NaoEhValida] ),
+    "Competencia", ListaNFsConsolidada[DataCompetencia],
+    "CaixaPrevista", ListaNFsConsolidada[DataCaixaPrevista],
+    "StatusLookupSheet", ListaNFsConsolidada[StatusLookupSheet],
+    "Realizado", ListaNFsConsolidada[ValorRealizadoConecta],
+    "Planejado_valido",
+        VAR naoEnc =
+            CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+        RETURN IF ( naoEnc || ListaNFsConsolidada[ValorRealizadoConecta] <> 0, 0, ListaNFsConsolidada[ValorPlanejado] )
+)
+ORDER BY [ChaveTerceiros]

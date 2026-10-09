@@ -1,0 +1,33 @@
+// ---------------------------------------------------------------------
+// D02 – Orçamento × caixa por área financeira (N4) × projeto × rubrica × mês
+//   Mesma lógica da R26 (merge "Não encontrado" e OPERACIONAL fora), aberta por área.
+//   Conferência: soma = R26 (BGQ3 31,44 mi; realizado 18,32 mi em 08/10/2026).
+// ---------------------------------------------------------------------
+EVALUATE
+SUMMARIZECOLUMNS (
+    dN4[N3],
+    dN4[N4],
+    dProjetos[IdPPM],
+    dProjetos[NomeLB],
+    dRubricas[Rubrica],
+    dCalendarioCaixa[Ano Mes Ordem],
+    TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, dRubricas[Rubrica] ),
+    TREATAS ( { "CAPEX" }, dNatureza[Natureza] ),
+    TREATAS ( { 2026, 2027 }, dCalendarioCaixa[Ano] ),
+    "BGQ1", [BG_Q1],
+    "BGQ2", [BG_Q2],
+    "BGQ3", [BGQ3_Vivo],
+    "Realizado_NF", SUM ( ListaNFsConsolidada[ValorRealizadoConecta] ),
+    "Futuro_NF_sem_operacional",
+        SUMX ( ListaNFsConsolidada,
+            VAR naoEnc =
+                CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                    || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+            VAR origem =
+                LOOKUPVALUE ( ListaGestaoTerceiros[Origem de Custeio],
+                              ListaGestaoTerceiros[ChaveUnica], ListaNFsConsolidada[ChaveTerceiros] )
+            RETURN
+                IF ( naoEnc || ListaNFsConsolidada[ValorRealizadoConecta] <> 0 || origem = "OPERACIONAL",
+                     0, ListaNFsConsolidada[ValorPlanejado] ) )
+)
+ORDER BY dN4[N4], dProjetos[IdPPM], dRubricas[Rubrica], dCalendarioCaixa[Ano Mes Ordem]

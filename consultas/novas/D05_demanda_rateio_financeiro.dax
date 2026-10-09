@@ -1,0 +1,56 @@
+// ---------------------------------------------------------------------
+// D05 – Demanda × área financeira pelo RATEIO das NFs
+//   Duas hierarquias, cada uma no seu papel:
+//     · alocação (quem gere a pessoa) → dim_gestores (gestor, gerência, gestor N4)
+//     · financeira (quem paga)         → NF → RC → projeto → dN4[N4]
+//   A demanda só tem área financeira quando já foi rateada em NF.
+//   O pipeline distribui cada linha de demanda pelas N4 na proporção do rateio da sua NF.
+//   Rodar as duas e salvar como D05a_demanda_linhas.csv e D05b_nf_rateio.csv
+// ---------------------------------------------------------------------
+
+// D05a – linhas de demanda (CAPEX, Reservas, status <> Saldo) com a hierarquia de alocação
+EVALUATE
+CALCULATETABLE (
+    SELECTCOLUMNS (
+        ListaGestaoTerceiros,
+        "ChaveUnica", ListaGestaoTerceiros[ChaveUnica],
+        "IdProfissional", ListaGestaoTerceiros[IdProfissional],
+        "Competencia", ListaGestaoTerceiros[DataCompetencia],
+        "CaixaPrevista", ListaGestaoTerceiros[DataCaixaPrevista],
+        "Rubrica", ListaGestaoTerceiros[Rubrica],
+        "Status", ListaGestaoTerceiros[Status],
+        "Diretoria", ListaGestaoTerceiros[Diretoria],
+        "GestorN4", RELATED ( dim_gestores[NomeGestorN4] ),
+        "Gerencia", RELATED ( dim_gestores[NomeGerencia] ),
+        "Gestor", RELATED ( dim_gestores[NomeGestor] ),
+        "Fornecedor", RELATED ( dFornecedores[NomeFornecedor] ),
+        "Demanda", ListaGestaoTerceiros[BGDemanda]
+    ),
+    ListaGestaoTerceiros[Origem de Custeio] = "CAPEX",
+    ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" },
+    ListaGestaoTerceiros[Status] <> "Saldo"
+)
+ORDER BY [Competencia], [ChaveUnica]
+
+// D05b – rateio das NFs de profissionais por projeto e N4 financeira
+EVALUATE
+SELECTCOLUMNS (
+    FILTER ( ListaNFsConsolidada, NOT ISBLANK ( ListaNFsConsolidada[IdProfissional] ) ),
+    "ChaveTerceiros", ListaNFsConsolidada[ChaveTerceiros],
+    "ReqCompra", ListaNFsConsolidada[ReqCompra],
+    "IdPPM_NF", ListaNFsConsolidada[IdPPM],
+    "IdPPM_RC", RELATED ( ListaRCsConsolidada[IdPPM] ),
+    "N4", RELATED ( dN4[N4] ),
+    "N3", RELATED ( dN4[N3] ),
+    "RC_NaoEhValida", RELATED ( ListaRCsConsolidada[NaoEhValida] ),
+    "Competencia", ListaNFsConsolidada[DataCompetencia],
+    "CaixaPrevista", ListaNFsConsolidada[DataCaixaPrevista],
+    "StatusLookupSheet", ListaNFsConsolidada[StatusLookupSheet],
+    "Realizado", ListaNFsConsolidada[ValorRealizadoConecta],
+    "Planejado_valido",
+        VAR naoEnc =
+            CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+        RETURN IF ( naoEnc || ListaNFsConsolidada[ValorRealizadoConecta] <> 0, 0, ListaNFsConsolidada[ValorPlanejado] )
+)
+ORDER BY [ChaveTerceiros]

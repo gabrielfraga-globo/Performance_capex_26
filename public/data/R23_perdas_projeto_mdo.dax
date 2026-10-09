@@ -1,0 +1,25 @@
+// ---------------------------------------------------------------------
+// R23 – MDO por projeto: perda BGQ1→BGQ3 x o que já foi gasto/comprometido
+// ---------------------------------------------------------------------
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        dProjetos[IdPPM],
+        dProjetos[NomeLB],
+        TREATAS ( { "MDO" }, dRubricas[Rubrica] ),
+        "BGQ1_2026", CALCULATE ( [BG_Q1], dCalendarioCaixa[Ano] = 2026 ),
+        "BGQ3_2026", CALCULATE ( [BGQ3_Vivo], dCalendarioCaixa[Ano] = 2026 ),
+        "BGQ1_2027", CALCULATE ( [BG_Q1], dCalendarioCaixa[Ano] = 2027 ),
+        "BGQ3_2027", CALCULATE ( [BGQ3_Vivo], dCalendarioCaixa[Ano] = 2027 ),
+        "Realizado", SUM ( ListaNFsConsolidada[ValorRealizadoConecta] ),
+        "Futuro_NF",
+            SUMX ( ListaNFsConsolidada,
+                VAR naoEnc =
+                    CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                        || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+                RETURN IF ( naoEnc || ListaNFsConsolidada[ValorRealizadoConecta] <> 0, 0, ListaNFsConsolidada[ValorPlanejado] ) )
+    ),
+    "Perda_total",          ( [BGQ1_2026] + [BGQ1_2027] ) - ( [BGQ3_2026] + [BGQ3_2027] ),
+    "Saldo_BGQ3_pos_compromisso", ( [BGQ3_2026] + [BGQ3_2027] ) - [Realizado] - [Futuro_NF]
+)
+ORDER BY [Perda_total] DESC

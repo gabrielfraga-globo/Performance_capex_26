@@ -1,0 +1,17 @@
+// ---------------------------------------------------------------------
+// R22 – BGQ1 x BGQ3 por rubrica, natureza e ano de caixa
+// ---------------------------------------------------------------------
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        dRubricas[Rubrica],
+        dNatureza[Natureza],
+        dCalendarioCaixa[Ano],
+        TREATAS ( { 2026, 2027 }, dCalendarioCaixa[Ano] ),
+        "BGQ1", [BG_Q1],
+        "BGQ3", [BGQ3_Vivo]
+    ),
+    "Perda", [BGQ1] - [BGQ3],
+    "Perda_%", DIVIDE ( [BGQ1] - [BGQ3], [BGQ1] )
+)
+ORDER BY dRubricas[Rubrica], dNatureza[Natureza], dCalendarioCaixa[Ano]

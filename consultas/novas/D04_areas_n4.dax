@@ -1,0 +1,4 @@
+// D04 – Cadastro de áreas (N1–N4) para dar nome aos Ids da D03
+EVALUATE
+SELECTCOLUMNS ( dN4, "IdN4", dN4[IdN4], "N4", dN4[N4], "N3", dN4[N3], "N2", dN4[N2] )
+ORDER BY [IdN4]

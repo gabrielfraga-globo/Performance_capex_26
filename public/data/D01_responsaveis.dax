@@ -1,0 +1,15 @@
+// ---------------------------------------------------------------------
+// D01 – Responsável por projeto (PO / 1º Aprovador) – OPCIONAL
+//       Sem este CSV o painel mostra "Não informado" no responsável.
+//       Salvar o resultado como public/data/D01_responsaveis.csv
+// ---------------------------------------------------------------------
+EVALUATE
+SELECTCOLUMNS (
+    dProjetos,
+    "IdPPM", dProjetos[IdPPM],
+    "NomeLB", dProjetos[NomeLB],
+    "IdN4", dProjetos[IdN4],
+    "PO", dProjetos[PO],
+    "Aprovador", dProjetos[1º Aprovador]
+)
+ORDER BY [IdPPM]

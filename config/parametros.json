@@ -1,0 +1,51 @@
+{
+  "_leiaMe": "dataReferencia \"auto\" = data da extração (public/data/_extracao.json) ou, na falta dela, a data do build. As janelas são relativas ao mês corrente de caixa.",
+  "dataReferencia": "auto",
+  "horizonteMeses": 12,
+  "janelaDemanda": {
+    "deslocamento": 0,
+    "meses": 5,
+    "_leiaMe": "Demanda média: competência do mês corrente até +4 meses (out/26–fev/27 na data de 08/10/2026)."
+  },
+  "janelaCustoPosition": {
+    "deslocamento": -8,
+    "meses": 8,
+    "_leiaMe": "Custo médio por position MDO: 8 meses anteriores ao mês corrente."
+  },
+  "limiarExcesso": 1,
+  "toleranciaDobroNF": 0.05,
+  "correcoes": [],
+  "naoDecidido": [
+    {
+      "id": "OQ-N4",
+      "tema": "Quais fornecedores são \"fake\"",
+      "efeito": "Nenhum fornecedor é rotulado como fake."
+    },
+    {
+      "id": "OQ-N13",
+      "tema": "Projetos sem BGQ3 estão contingenciados?",
+      "efeito": "Rótulo \"Requer validação\", nunca \"Contingenciado\"."
+    },
+    {
+      "id": "OQ-N16",
+      "tema": "Mock de RESERVA/INSTALAÇÃO = 2× o rateio de NF",
+      "efeito": "Contado como \"Requer validação\", separado do indício forte."
+    },
+    {
+      "id": "OQ-N8",
+      "tema": "Saldo de position: BGDemanda ou baseline?",
+      "efeito": "Saldo de positions não aparece no nível executivo."
+    },
+    {
+      "id": "OQ-N11",
+      "tema": "861 linhas \"A pagar\" em competências passadas",
+      "efeito": "Não tratadas como dívida."
+    },
+    {
+      "id": "OQ-N15",
+      "tema": "Horizonte da cobertura (out/26–set/27)",
+      "efeito": "O horizonte aparece no rótulo do indicador."
+    }
+  ],
+  "_leiaMe_correcoes": "Vazio por decisão: o painel mostra o dado exatamente como está no BI. Erros de cadastro aparecem na tela 3 (Dado cadastral a corrigir) e devem ser corrigidos na origem."
+}

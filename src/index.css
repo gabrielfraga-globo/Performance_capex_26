@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tema claro (padrão para apresentação) */
+:root,
+[data-theme="light"] {
+  --c-bg: #f4f6fa;
+  --c-card: #ffffff;
+  --c-card-alt: #f7f9fc;
+  --c-line: #dfe5ee;
+  --c-line-soft: #eef2f7;
+  --c-ink: #142033;
+  --c-ink-muted: #4f5d73;
+  --c-ink-faint: #7b879a;
+  --c-info: #1f5fd6;
+  --c-info-soft: #e8f0fd;
+  --c-warn: #b25e09;
+  --c-warn-soft: #fdf1e3;
+  --c-crit: #c0392b;
+  --c-crit-soft: #fbeceb;
+  --c-ok: #1e7f55;
+  --c-ok-soft: #e6f4ed;
+  --c-hyp: #6d4fc4;
+  --c-hyp-soft: #f0ecfb;
+  --shadow: 0 1px 2px rgba(20, 32, 51, 0.04), 0 4px 16px rgba(20, 32, 51, 0.04);
+  color-scheme: light;
+}
+
+/* Tema escuro (padrão capex-executivo-escuro) */
+[data-theme="dark"] {
+  --c-bg: #0b1220;
+  --c-card: #111a2c;
+  --c-card-alt: #131c2f;
+  --c-line: #1e2a40;
+  --c-line-soft: #1b2534;
+  --c-ink: #e6eaf2;
+  --c-ink-muted: #a3aec2;
+  --c-ink-faint: #7d89a0;
+  --c-info: #5b8cff;
+  --c-info-soft: #16264a;
+  --c-warn: #f5a524;
+  --c-warn-soft: #2e2413;
+  --c-crit: #f26b5f;
+  --c-crit-soft: #33191a;
+  --c-ok: #3ccf8e;
+  --c-ok-soft: #12291f;
+  --c-hyp: #a88bff;
+  --c-hyp-soft: #231c3b;
+  --shadow: none;
+  color-scheme: dark;
+}
+
+html, body, #root { min-height: 100%; }
+body {
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: "Segoe UI", Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.tabular { font-variant-numeric: tabular-nums; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl thead th {
+  text-align: left; padding: 8px 10px; background: var(--c-card-alt); color: var(--c-ink-muted);
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--c-line); position: sticky; top: 0; z-index: 1; white-space: nowrap;
+}
+.tbl tbody td { padding: 9px 10px; border-bottom: 1px solid var(--c-line-soft); vertical-align: top; }
+.tbl tbody tr:hover td { background: var(--c-card-alt); }
+.tbl .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+:focus-visible { outline: 2px solid var(--c-info); outline-offset: 2px; border-radius: 6px; }
+
+input[type="range"] { accent-color: var(--c-info); }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}

@@ -1,0 +1,11 @@
+NomeGestorN4;N4_orcamento;Status;Confianca_sugestao;Gerencias_na_demanda;Demanda_ref_RS_mi;Pct_demanda;Observacao
+"EDUARDO DE SOUZA FARIA";"PLAT. DE EXIBIÇÃO";"sugerido";"Alta";"EXIBICAO CANAIS ABERTOS E PAY TV";2,17;7,0%;"O próprio modelo já associa este gestor à Plat. Exibição (dim_gestores[N3])"
+"WAGNER DA LUZ TELLES";"PLAT. DE PÓS-PROD. E DESIGN";"sugerido";"Média";"PLAT - POS E DESIGN E VIRTUAL | PLAT - GESTAO DE ATIVOS DA PRODUCAO | PLAT - GESTAO DE HISTORIAS";1,51;4,9%;"Gestão de ativos e de histórias pode pertencer a outra N4"
+"ADONIAS NOBREGA DE MELO JUNIOR";"PLAT. DE METADADOS E MÍDIAS";"sugerido";"Média";"PLAT - MIDIAS | PLAT - METADADOS E API | PLAT - DESACOPLADAS E IA";1,44;4,6%;"Desacopladas e IA pode pertencer a outra N4"
+"MARCELO VALE FONTANA";"PLAT. DE CAPTAÇÃO E PRODUÇÃO";"sugerido";"Média";"PLAT - CAPTACAO E EVENTOS | PLAT - CORE DE PRODUCAO | PLAT - ORQUESTRACAO E CORE IP";3,51;11,3%;""
+"RAFAEL SILVA VERAS";"";"a definir";"";"PARCERIAS DE SUSTENTACAO RJ - EG | RJ - ION | RJ - JB";10,58;34,1%;"Sustentação atende várias plataformas? Pode exigir rateio entre N4 ou área própria"
+"EDSON MOURA DE SOUZA";"";"a definir";"";"PARCERIAS DE SUSTENTACAO SP E REGIONAIS | SP | BSB";4,17;13,4%;"Mesma questão da sustentação RJ"
+"FABIO DO CARMO CARDOSO";"";"a definir";"";"DEVOPS E SRE CORPORATIVO E SOL MIDIA";3,94;12,7%;"Corporativo: aparece nas duas diretorias"
+"FERNANDO WIKTOR QUINTELA PIETRUKOWICZ";"";"a definir";"Baixa: PLATAFORMA DE DISTRIBUIÇÃO?";"REDES";2,88;9,3%;"Aparece nas duas diretorias"
+"TATIANA DE OLIVEIRA NUNES";"";"a definir";"Baixa: PLATAFORMA DE PRÉ-PRODUÇÃO?";"AGILIDADE PARA PRODUZIR";0,44;1,4%;""
+"RODRIGO AGRA DE OLIVEIRA";"";"a definir";"Baixa: PLATAFORMAS DE PRODUÇÃO DE CONTEÚDO?";"PROJETOS DE PRODUCAO E DISTRIBUICAO DE CONTEUDO";0,38;1,2%;""

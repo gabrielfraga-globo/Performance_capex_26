@@ -1,0 +1,47 @@
+// ---------------------------------------------------------------------
+// R13 – P1 · Saldo por RC (match legítimo + exclusão "Não encontrado")
+//       Considera só RCs válidas (NaoEhValida = FALSE) – confirmar com R18
+// ---------------------------------------------------------------------
+EVALUATE
+VAR T =
+    ADDCOLUMNS (
+        SUMMARIZECOLUMNS (
+            dProjetos[IdPPM],
+            dProjetos[NomeLB],
+            ListaRCsConsolidada[IdRequisicaoConecta],
+            ListaRCsConsolidada[StatusEmissao],
+            ListaRCsConsolidada[StatusCompromisso],
+            dFornecedores[NomeFornecedor],
+            TREATAS ( { "RESERVAS" }, dRubricas[Agrupador] ),
+            TREATAS ( { FALSE () }, ListaRCsConsolidada[NaoEhValida] ),
+            "RC_Planejado", SUM ( ListaRCsConsolidada[ValorPlanejado] ),
+            "RC_Empenho",   SUM ( ListaRCsConsolidada[ValorEmpenhoTotal] ),
+            "NF_Realizado", SUM ( ListaNFsConsolidada[ValorRealizadoConecta] ),
+            "NF_Futuro",
+                SUMX ( ListaNFsConsolidada,
+                    VAR naoEnc =
+                        CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                            || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" )
+                    RETURN IF ( naoEnc || ListaNFsConsolidada[ValorRealizadoConecta] <> 0, 0, ListaNFsConsolidada[ValorPlanejado] ) ),
+            "NF_Duplicada_Excluida",
+                SUMX ( ListaNFsConsolidada,
+                    IF ( CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "não" )
+                            || CONTAINSSTRING ( ListaNFsConsolidada[StatusLookupSheet], "nao" ),
+                         ListaNFsConsolidada[ValorPlanejado] ) )
+        ),
+        "Compromisso_Total", [NF_Realizado] + [NF_Futuro],
+        "Saldo_Empenho",     [RC_Empenho] - [NF_Realizado] - [NF_Futuro]
+    )
+RETURN
+    ADDCOLUMNS (
+        T,
+        "Sinal",
+            SWITCH (
+                TRUE (),
+                ListaRCsConsolidada[StatusEmissao] IN { "A EMITIR", "AGUARDANDO CONECTA" }, "A emitir / aguardando",
+                [Saldo_Empenho] > 1 && [NF_Futuro] = 0,  "Saldo sem NF futura",
+                [Saldo_Empenho] > 1,                     "Saldo com NF futura",
+                [Saldo_Empenho] < -1,                    "NFs acima do empenho",
+                "OK"
+            )
+    )

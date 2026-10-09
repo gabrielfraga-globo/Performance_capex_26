@@ -1,0 +1,78 @@
+// ---------------------------------------------------------------------
+// D00 – Validação: a lista de terceiros liga a demanda à área?
+//   Duas visões na ListaGestaoTerceiros:
+//     · alocação  → IdSetorAlocacao (testa se é o IdN4 da dN4)
+//     · custeio   → IdDefesaProjeto (testa se é o IdPPM da dProjetos → N4 do orçamento)
+//   Rodar as 4 consultas (D00a a D00d) no DAX Query View e me mandar o resultado.
+// ---------------------------------------------------------------------
+
+// D00a – cobertura das chaves (demanda CAPEX, MDO/INSTALAÇÃO/RESERVA, status <> Saldo)
+EVALUATE
+VAR t =
+    CALCULATETABLE (
+        ListaGestaoTerceiros,
+        ListaGestaoTerceiros[Origem de Custeio] = "CAPEX",
+        ListaGestaoTerceiros[Status] <> "Saldo",
+        ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" }
+    )
+VAR n4 = VALUES ( dN4[IdN4] )
+VAR ppm = VALUES ( dProjetos[IdPPM] )
+RETURN
+    ROW (
+        "Linhas", COUNTROWS ( t ),
+        "Demanda", SUMX ( t, ListaGestaoTerceiros[BGDemanda] ),
+        "Setor_preenchido", COUNTROWS ( FILTER ( t, NOT ISBLANK ( ListaGestaoTerceiros[IdSetorAlocacao] ) ) ),
+        "Setor_bate_IdN4", COUNTROWS ( FILTER ( t, INT ( ListaGestaoTerceiros[IdSetorAlocacao] ) IN n4 ) ),
+        "DefesaProjeto_preenchido", COUNTROWS ( FILTER ( t, NOT ISBLANK ( ListaGestaoTerceiros[IdDefesaProjeto] ) ) ),
+        "DefesaProjeto_bate_IdPPM", COUNTROWS ( FILTER ( t, FORMAT ( ListaGestaoTerceiros[IdDefesaProjeto], "0" ) IN ppm ) ),
+        "Demanda_com_projeto", SUMX ( FILTER ( t, FORMAT ( ListaGestaoTerceiros[IdDefesaProjeto], "0" ) IN ppm ), ListaGestaoTerceiros[BGDemanda] )
+    )
+
+// D00b – demanda por setor de alocação (o nome do N4 aparece se o Id bater com a dN4)
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        ListaGestaoTerceiros[IdSetorAlocacao],
+        ListaGestaoTerceiros[Diretoria],
+        TREATAS ( { "CAPEX" }, ListaGestaoTerceiros[Origem de Custeio] ),
+        TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, ListaGestaoTerceiros[Rubrica] ),
+        FILTER ( ALL ( ListaGestaoTerceiros[Status] ), ListaGestaoTerceiros[Status] <> "Saldo" ),
+        "Demanda", SUM ( ListaGestaoTerceiros[BGDemanda] ),
+        "Positions", DISTINCTCOUNT ( ListaGestaoTerceiros[IdProfissional] )
+    ),
+    "N4_se_IdN4", LOOKUPVALUE ( dN4[N4], dN4[IdN4], INT ( ListaGestaoTerceiros[IdSetorAlocacao] ) )
+)
+ORDER BY [Demanda] DESC
+
+// D00c – demanda por projeto de custeio → N4 do orçamento
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        ListaGestaoTerceiros[IdDefesaProjeto],
+        TREATAS ( { "CAPEX" }, ListaGestaoTerceiros[Origem de Custeio] ),
+        TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, ListaGestaoTerceiros[Rubrica] ),
+        FILTER ( ALL ( ListaGestaoTerceiros[Status] ), ListaGestaoTerceiros[Status] <> "Saldo" ),
+        "Demanda", SUM ( ListaGestaoTerceiros[BGDemanda] )
+    ),
+    "NomeLB", LOOKUPVALUE ( dProjetos[NomeLB], dProjetos[IdPPM], FORMAT ( ListaGestaoTerceiros[IdDefesaProjeto], "0" ) ),
+    "IdN4_orcamento", LOOKUPVALUE ( dProjetos[IdN4], dProjetos[IdPPM], FORMAT ( ListaGestaoTerceiros[IdDefesaProjeto], "0" ) )
+)
+ORDER BY [Demanda] DESC
+
+// D00d – o filtro dN4[N4] chega na demanda?
+//   No modelo, dN4 e ListaGestaoTerceiros só se encontram em aux_n3 (nível N3), com filtro de mão única.
+//   Se a coluna "Demanda" repetir o mesmo valor em todos os N4 de uma mesma N3, o filtro não chega.
+EVALUATE
+SUMMARIZECOLUMNS (
+    dN4[N3],
+    dN4[N4],
+    "BGQ3", [BGQ3_Vivo],
+    "Demanda",
+        CALCULATE (
+            SUM ( ListaGestaoTerceiros[BGDemanda] ),
+            ListaGestaoTerceiros[Origem de Custeio] = "CAPEX",
+            ListaGestaoTerceiros[Status] <> "Saldo",
+            ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" }
+        )
+)
+ORDER BY dN4[N3], dN4[N4]

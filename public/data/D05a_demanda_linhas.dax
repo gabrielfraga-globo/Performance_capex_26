@@ -1,0 +1,26 @@
+// ---------------------------------------------------------------------
+// D05a – Linhas de demanda (CAPEX, Reservas, status <> Saldo) com a hierarquia de ALOCAÇÃO
+//   (dim_gestores: quem gere a pessoa). A área FINANCEIRA vem do rateio das NFs (D05b).
+// ---------------------------------------------------------------------
+EVALUATE
+CALCULATETABLE (
+    SELECTCOLUMNS (
+        ListaGestaoTerceiros,
+        "ChaveUnica", ListaGestaoTerceiros[ChaveUnica],
+        "IdProfissional", ListaGestaoTerceiros[IdProfissional],
+        "Competencia", ListaGestaoTerceiros[DataCompetencia],
+        "CaixaPrevista", ListaGestaoTerceiros[DataCaixaPrevista],
+        "Rubrica", ListaGestaoTerceiros[Rubrica],
+        "Status", ListaGestaoTerceiros[Status],
+        "Diretoria", ListaGestaoTerceiros[Diretoria],
+        "GestorN4", RELATED ( dim_gestores[NomeGestorN4] ),
+        "Gerencia", RELATED ( dim_gestores[NomeGerencia] ),
+        "Gestor", RELATED ( dim_gestores[NomeGestor] ),
+        "Fornecedor", RELATED ( dFornecedores[NomeFornecedor] ),
+        "Demanda", ListaGestaoTerceiros[BGDemanda]
+    ),
+    ListaGestaoTerceiros[Origem de Custeio] = "CAPEX",
+    ListaGestaoTerceiros[Rubrica] IN { "MDO", "INSTALAÇÃO", "RESERVA" },
+    ListaGestaoTerceiros[Status] <> "Saldo"
+)
+ORDER BY [Competencia], [ChaveUnica]

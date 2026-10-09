@@ -1,0 +1,21 @@
+// ---------------------------------------------------------------------
+// R25 – Demanda CAPEX por competência e rubrica (base da demanda média)
+// ---------------------------------------------------------------------
+EVALUATE
+SUMMARIZECOLUMNS (
+    dCalendarioCompetencia[Ano Mes Ordem],
+    dRubricas[Rubrica],
+    TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, dRubricas[Rubrica] ),
+    TREATAS ( { "CAPEX" }, dNatureza[Natureza] ),
+    "Demanda_ativa",   CALCULATE ( SUM ( ListaGestaoTerceiros[BGDemanda] ), ListaGestaoTerceiros[Status] <> "Saldo" ),
+    "Demanda_A_pagar", CALCULATE ( SUM ( ListaGestaoTerceiros[BGDemanda] ), ListaGestaoTerceiros[Status] = "A pagar" ),
+    "Demanda_Pago",    CALCULATE ( SUM ( ListaGestaoTerceiros[BGDemanda] ), ListaGestaoTerceiros[Status] = "Pago" ),
+    "Baseline_IPCA",   SUM ( ListaGestaoTerceiros[ValorBaselineMesIPCA] ),
+    "Positions_com_valor",
+        CALCULATE (
+            DISTINCTCOUNT ( ListaGestaoTerceiros[IdProfissional] ),
+            ListaGestaoTerceiros[Status] <> "Saldo",
+            ListaGestaoTerceiros[BGDemanda] > 0
+        )
+)
+ORDER BY dCalendarioCompetencia[Ano Mes Ordem], dRubricas[Rubrica]

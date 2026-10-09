@@ -1,0 +1,35 @@
+// ---------------------------------------------------------------------
+// R03 – P1 · Detalhe por RC (Projeto x RC x Fornecedor)
+//       Candidatas a cancelamento (HIPÓTESE, a validar): RC com saldo de
+//       empenho e SEM NF futura planejada, ou RC marcada como não válida com empenho
+// ---------------------------------------------------------------------
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZECOLUMNS (
+        dProjetos[IdPPM],
+        dProjetos[NomeLB],
+        ListaRCsConsolidada[IdRequisicaoConecta],
+        ListaRCsConsolidada[IdOrdemConecta],
+        ListaRCsConsolidada[StatusEmissao],
+        ListaRCsConsolidada[StatusCompromisso],
+        ListaRCsConsolidada[RC Valida],
+        dFornecedores[NomeFornecedor],
+        TREATAS ( { "RESERVAS" }, dRubricas[Agrupador] ),
+        "RC_Planejado",  SUM ( ListaRCsConsolidada[ValorPlanejado] ),
+        "RC_Empenho",    SUM ( ListaRCsConsolidada[ValorEmpenhoTotal] ),
+        "RC_Realizado",  SUM ( ListaRCsConsolidada[ValorRealizado] ),
+        "NF_Realizado",  SUM ( ListaNFsConsolidada[ValorRealizadoConecta] ),
+        "NF_Futuro",     SUM ( ListaNFsConsolidada[ValorPlanejado] ),
+        "Ult_Comp_NF",   MAX ( ListaNFsConsolidada[DataCompetencia] )
+    ),
+    "Saldo_Empenho", [RC_Empenho] - [NF_Realizado] - [NF_Futuro],
+    "Sinal",
+        SWITCH (
+            TRUE (),
+            ListaRCsConsolidada[RC Valida] = "Nao valida" && [RC_Empenho] > 0,                       "Não válida com empenho",
+            [RC_Empenho] - [NF_Realizado] - [NF_Futuro] > 1 && ISBLANK ( [NF_Futuro] ), "Saldo sem NF futura",
+            [RC_Empenho] - [NF_Realizado] - [NF_Futuro] < -1,                     "NFs acima do empenho",
+            ListaRCsConsolidada[StatusEmissao] = "A EMITIR",                      "A emitir",
+            "OK"
+        )
+)

@@ -1,0 +1,18 @@
+// ---------------------------------------------------------------------
+// D00e – Base para o de-para "área da demanda → N4 do orçamento"
+//   Demanda (CAPEX, Reservas, status <> Saldo) por setor de alocação × gestor N4 × gerência × diretoria.
+//   Com ela o time marca, para cada setor/gestor N4, a N4 da dN4 correspondente.
+// ---------------------------------------------------------------------
+EVALUATE
+SUMMARIZECOLUMNS (
+    ListaGestaoTerceiros[IdSetorAlocacao],
+    ListaGestaoTerceiros[Diretoria],
+    dim_gestores[NomeGestorN4],
+    dim_gestores[NomeGerencia],
+    TREATAS ( { "CAPEX" }, ListaGestaoTerceiros[Origem de Custeio] ),
+    TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, ListaGestaoTerceiros[Rubrica] ),
+    FILTER ( ALL ( ListaGestaoTerceiros[Status] ), ListaGestaoTerceiros[Status] <> "Saldo" ),
+    "Demanda", SUM ( ListaGestaoTerceiros[BGDemanda] ),
+    "Positions", DISTINCTCOUNT ( ListaGestaoTerceiros[IdProfissional] )
+)
+ORDER BY [Demanda] DESC
