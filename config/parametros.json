@@ -3,9 +3,9 @@
   "dataReferencia": "auto",
   "horizonteMeses": 12,
   "ciclo": {
-    "de": 202604,
+    "de": 202601,
     "ate": 202703,
-    "_leiaMe": "OQ-H2 (decisão 08/10/2026): ciclo do orçamento abr/26 → mar/27. Caixa depois de mar/27 aparece como 'além do ciclo'."
+    "_leiaMe": "OQ-H2 revisada em 09/10/2026: o ciclo começa em jan/26 para contar todo o realizado pago em caixa no ano (inclusive jan–mar/26). Termina em mar/27, último mês com BG. Caixa depois de mar/27 aparece como 'além do ciclo'."
   },
   "janelaDemanda": {
     "deslocamento": 0,
@@ -60,7 +60,7 @@
     },
     {
       "id": "OQ-H2",
-      "decisao": "Ciclo abr/26 → mar/27. NF e demanda depois de mar/27 aparecem como além do orçamento vigente."
+      "decisao": "Ciclo jan/26 → mar/27 (revisado em 09/10/2026): todo o realizado pago em caixa desde jan/26 conta, inclusive por Defesa. NF e demanda depois de mar/27 aparecem como além do orçamento vigente."
     },
     {
       "id": "OQ-H3",

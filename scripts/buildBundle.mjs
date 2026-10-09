@@ -108,9 +108,11 @@ export function construir(dados, p) {
 
 function main() {
   const avisos = [];
-  const cfg = JSON.parse(fs.readFileSync(path.join(root, "config", "parametros.json"), "utf8"));
+  // O PowerShell 5 grava UTF-8 com BOM; o JSON.parse não aceita o BOM.
+  const lerJson = (f) => JSON.parse(fs.readFileSync(f, "utf8").replace(/^\uFEFF/, ""));
+  const cfg = lerJson(path.join(root, "config", "parametros.json"));
   const extFile = path.join(dataDir, "_extracao.json");
-  const extracao = fs.existsSync(extFile) ? JSON.parse(fs.readFileSync(extFile, "utf8")) : null;
+  const extracao = fs.existsSync(extFile) ? lerJson(extFile) : null;
   const p = resolverParametros(cfg, extracao);
   const dados = {}, fontes = [];
   for (const f of FONTES) {

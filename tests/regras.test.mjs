@@ -89,7 +89,7 @@ describe("áreas financeiras (D02 + D05)", () => {
   });
 });
 
-describe("sustentação no ciclo abr/26 → mar/27 (OQ-H1, H2, H4)", async () => {
+describe("sustentação no ciclo jan/26 → mar/27 (OQ-H1, H2 revisada, H4)", async () => {
   const { consolidar } = await import("../src/lib/sustentacao.ts");
   const s = b.sustentacao;
   it("demanda por mês de caixa (D05a, com 'Pago') fecha com R26[Demanda_ativa_CAPEX]", () => {
@@ -100,16 +100,16 @@ describe("sustentação no ciclo abr/26 → mar/27 (OQ-H1, H2, H4)", async () =>
       expect(Math.abs(d - r26.get(mes))).toBeLessThan(1);
     }
   });
-  it("BGQ3: disponível 12,14 = 28,99 − 15,87 − 0,97; demanda futura 11,70; cobre com +0,44", () => {
+  it("BGQ3: disponível 12,14 = 31,44 − 18,32 − 0,97; demanda futura 11,70; cobre com +0,44 (15/15 meses)", () => {
     const k = consolidar(s, "bgq3");
-    expect(mi(k.bg)).toBe(28.99);
-    expect(mi(k.realizado)).toBe(15.87);
+    expect(mi(k.bg)).toBe(31.44);
+    expect(mi(k.realizado)).toBe(18.32);
     expect(mi(k.emPagamento)).toBe(0.97);
     expect(mi(k.disponivel)).toBe(12.14);
     expect(mi(k.demandaFutura)).toBe(11.7);
     expect(mi(k.pagoExcluido)).toBe(0.78);
     expect(k.coberto).toBe(true);
-    expect(k.mesesSustentados).toBe(12);
+    expect(k.mesesSustentados).toBe(15);
     expect(mi(k.alemDoCiclo.nf)).toBe(0.8);
     expect(k.alemDoCiclo.meses).toEqual([202704]);
   });
@@ -127,13 +127,19 @@ describe("sustentação no ciclo abr/26 → mar/27 (OQ-H1, H2, H4)", async () =>
 describe("diretoria (N3): orçamento por dN4[N3], demanda por ListaGestaoTerceiros[Diretoria]", async () => {
   const { consolidar, diretorias } = await import("../src/lib/sustentacao.ts");
   const s = b.sustentacao;
-  it("duas diretorias; Produção falta 0,66 (11/12 meses) e Entrega sobra 1,09; somam o total", () => {
+  it("duas diretorias; Produção falta 0,66 (14/15 meses, até fev/27) e Entrega sobra 1,09; somam o total", () => {
     expect(diretorias(s)).toEqual(["Plataformas De Entrega", "Plataformas De Produção"]);
     const p = consolidar(s, "bgq3", null, "Plataformas De Produção"), e = consolidar(s, "bgq3", null, "Plataformas De Entrega");
     expect(mi(p.resultado)).toBe(-0.66);
-    expect(p.mesesSustentados).toBe(11);
+    expect(p.mesesSustentados).toBe(14);
     expect(mi(e.resultado)).toBe(1.09);
     expect(p.resultado + e.resultado).toBeCloseTo(consolidar(s, "bgq3").resultado, 2);
+  });
+  it("incluir jan–mar/26 não muda o disponível: o BG desses meses é igual ao realizado (BG vivo)", () => {
+    const k = consolidar(s, "bgq3");
+    const tri = k.serie.filter((x) => x.mes <= 202603);
+    const bgTri = tri.reduce((t, x) => t + x.orcamento, 0), realTri = tri.reduce((t, x) => t + x.consumo, 0);
+    expect(Math.abs(bgTri - realTri)).toBeLessThan(5000);
   });
   it("série mensal: orçamento acumulado no fim do ciclo = BG do ciclo", () => {
     const k = consolidar(s, "bgq3");
@@ -169,13 +175,45 @@ describe("área (N4) pela área do projeto da RC (OQ-A1, 09/10/2026)", async () 
 describe("simulação de remanejamento (OQ-R1: estudo, não default)", async () => {
   const { consolidar, comAjuste } = await import("../src/lib/sustentacao.ts");
   const s = b.sustentacao;
-  it("Entrega → Produção R$ 657 mil: Produção passa a 12/12 meses, Entrega segue coberta, total não muda", () => {
+  it("Entrega → Produção R$ 657 mil: Produção passa a 15/15 meses, Entrega segue coberta, total não muda", () => {
     const p = consolidar(s, "bgq3", null, "Plataformas De Produção"), e = consolidar(s, "bgq3", null, "Plataformas De Entrega");
     const v = -p.resultado;
     const p2 = comAjuste(p, v), e2 = comAjuste(e, -v);
     expect(p2.resultado).toBeCloseTo(0, 2);
-    expect(p2.mesesSustentados).toBe(12);
+    expect(p2.mesesSustentados).toBe(15);
     expect(e2.coberto).toBe(true);
     expect(p2.resultado + e2.resultado).toBeCloseTo(p.resultado + e.resultado, 2);
+  });
+});
+
+describe("defesa (safra do projeto)", async () => {
+  const { sustentacao } = await import("../scripts/lib/sustentacao.mjs");
+  const { consolidar, defesas } = await import("../src/lib/sustentacao.ts");
+  it("sem a coluna Defesa na D02 o filtro fica desligado e nada muda", () => {
+    expect(b.sustentacao.temDefesa).toBe(false);
+    expect(defesas(b.sustentacao)).toEqual([]);
+  });
+  it("com a coluna, a demanda segue a defesa do projeto da RC e as safras somam o total (estrutura, não dado real)", () => {
+    const ciclo = { de: 202604, ate: 202703 };
+    const d02 = [
+      { N3: "P", N4: "A", IdPPM: "1", Defesa: "Nova Iniciativa", Rubrica: "MDO", "Ano Mes Ordem": 202611, BGQ1: 0, BGQ2: 0, BGQ3: 100, Realizado_NF: 0, Futuro_NF_sem_operacional: 0 },
+      { N3: "P", N4: "A", IdPPM: "2", Defesa: "Plurianual", Rubrica: "MDO", "Ano Mes Ordem": 202611, BGQ1: 0, BGQ2: 0, BGQ3: 50, Realizado_NF: 0, Futuro_NF_sem_operacional: 0 },
+    ];
+    const d05a = [
+      { ChaveUnica: "x", CaixaPrevista: "2026-11-01", Rubrica: "MDO", Status: "A Pagar", Diretoria: "P", Demanda: 90 },
+      { ChaveUnica: "y", CaixaPrevista: "2026-11-01", Rubrica: "MDO", Status: "A Pagar", Diretoria: "P", Demanda: 10 },
+    ];
+    const d05b = [
+      { ChaveTerceiros: "x", IdPPM_RC: "1", N4: "A", Realizado: 0, Planejado_valido: 30 },
+      { ChaveTerceiros: "x", IdPPM_RC: "2", N4: "A", Realizado: 0, Planejado_valido: 60 },
+    ];
+    const s = sustentacao(d02, d05a, ciclo, 202610, d05b);
+    expect(s.temDefesa).toBe(true);
+    expect(defesas(s)).toEqual(["Nova Iniciativa", "Plurianual", "Sem projeto"]);
+    const ni = consolidar(s, "bgq3", null, null, null, "Nova Iniciativa"), pl = consolidar(s, "bgq3", null, null, null, "Plurianual"), sp = consolidar(s, "bgq3", null, null, null, "Sem projeto");
+    expect(ni.demandaFutura).toBeCloseTo(30, 6);
+    expect(pl.demandaFutura).toBeCloseTo(60, 6);
+    expect(sp.demandaFutura).toBeCloseTo(10, 6);
+    expect(ni.resultado + pl.resultado + sp.resultado).toBeCloseTo(consolidar(s, "bgq3").resultado, 6);
   });
 });

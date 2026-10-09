@@ -1,13 +1,13 @@
 /**
  * Sustentação do orçamento no ciclo (decisões do time em 08/10/2026):
  *   OQ-H1  Orçamento disponível = BG aprovado − realizado − valores já em pagamento (NF do mês corrente).
- *   OQ-H2  Ciclo abr/26 → mar/27; o que vem depois é "além do ciclo" e não entra na conta.
+ *   OQ-H2  Ciclo jan/26 → mar/27 (revisado em 09/10); o que vem depois é "além do ciclo" e não entra na conta.
  *   OQ-H3  Só dois estados: coberto / não coberto.
  *   OQ-H4  Cobertura = meses do ciclo sustentados pelo BG total, pelo consumo acumulado.
  * Só soma valores das extrações D02 e D05a. Nenhuma estimativa.
  */
-export interface LinhaSust { rub: string; mes: number; n3: string; n4: string; bgq1: number; bgq2: number; bgq3: number; realizado: number; nfFutura: number; demanda: number; demandaPago: number }
-export interface Sustentacao { ciclo: { de: number; ate: number }; mesCorrente: number; linhas: LinhaSust[]; atribuicao?: { umaArea: number; variasAreas: number; semNF: number } }
+export interface LinhaSust { rub: string; mes: number; n3: string; n4: string; def: string | null; bgq1: number; bgq2: number; bgq3: number; realizado: number; nfFutura: number; demanda: number; demandaPago: number }
+export interface Sustentacao { ciclo: { de: number; ate: number }; mesCorrente: number; temDefesa?: boolean; linhas: LinhaSust[]; atribuicao?: { umaArea: number; variasAreas: number; semNF: number } }
 export type Cenario = "bgq1" | "bgq2" | "bgq3";
 export interface MesSust { mes: number; tipo: "realizado" | "corrente" | "demanda"; orcamento: number; orcamentoAcum: number; consumo: number; acumulado: number; coberto: boolean }
 
@@ -18,9 +18,9 @@ export function mesesEntre(de: number, ate: number): number[] {
   return out;
 }
 
-export function consolidar(sus: Sustentacao, cenario: Cenario = "bgq3", rubrica: string | null = null, diretoria: string | null = null, area: string | null = null) {
+export function consolidar(sus: Sustentacao, cenario: Cenario = "bgq3", rubrica: string | null = null, diretoria: string | null = null, area: string | null = null, defesa: string | null = null) {
   const { ciclo, mesCorrente } = sus;
-  const ls = sus.linhas.filter((l) => (!rubrica || l.rub === rubrica) && (!diretoria || l.n3 === diretoria) && (!area || l.n4 === area));
+  const ls = sus.linhas.filter((l) => (!rubrica || l.rub === rubrica) && (!diretoria || l.n3 === diretoria) && (!area || l.n4 === area) && (!defesa || l.def === defesa));
   const soma = (f: (l: LinhaSust) => number, ok: (l: LinhaSust) => boolean) => ls.filter(ok).reduce((t, l) => t + f(l), 0);
   const dentro = (l: LinhaSust) => l.mes >= ciclo.de && l.mes <= ciclo.ate;
 
@@ -61,6 +61,13 @@ export function consolidar(sus: Sustentacao, cenario: Cenario = "bgq3", rubrica:
 }
 export const diretorias = (sus: Sustentacao) => [...new Set(sus.linhas.map((l) => l.n3))].filter((d) => d !== "(sem diretoria)").sort();
 export const SEM_AREA = "Sem área";
+export const SEM_PROJETO = "Sem projeto";
+/** Safras de defesa presentes (vazio enquanto a D02 não trouxer a coluna Defesa). */
+export const defesas = (sus: Sustentacao) => {
+  if (!sus.temDefesa) return [] as string[];
+  const xs = [...new Set(sus.linhas.map((l) => l.def).filter((d): d is string => !!d))];
+  return [...xs.filter((d) => d !== SEM_PROJETO).sort(), ...(xs.includes(SEM_PROJETO) ? [SEM_PROJETO] : [])];
+};
 /** Áreas (N4) presentes, opcionalmente só as de uma diretoria; "Sem área" (demanda sem NF) por último. */
 export const areas = (sus: Sustentacao, diretoria: string | null = null) => {
   const xs = [...new Set(sus.linhas.filter((l) => !diretoria || l.n3 === diretoria).filter((l) => Math.abs(l.bgq3) + Math.abs(l.demanda) + Math.abs(l.realizado) > 0.5).map((l) => l.n4))];

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, ChevronDown, Download, Hourglass, Lightbulb, Mail, Plus, RotateCw, Sparkles, X } from "lucide-react";
 import { Area, Bar, BarChart, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useApp } from "../App";
-import { areas as listarAreas, comAjuste, consolidar, diretorias, SEM_AREA, type Cenario, type Consolidado } from "../lib/sustentacao";
+import { areas as listarAreas, comAjuste, consolidar, defesas as listarDefesas, diretorias, SEM_AREA, type Cenario, type Consolidado } from "../lib/sustentacao";
 import { notificar } from "../lib/decisoes";
 import { brl, mes, mi } from "../lib/format";
 
@@ -15,7 +15,7 @@ import { brl, mes, mi } from "../lib/format";
 const RUBRICAS = ["MDO", "INSTALAÇÃO", "RESERVA"] as const;
 const NOME_RUB: Record<string, string> = { MDO: "MDO", "INSTALAÇÃO": "Instalação", RESERVA: "Reserva" };
 const NOME_CEN: Record<Cenario, string> = { bgq1: "BGQ1", bgq2: "BGQ2", bgq3: "BGQ3" };
-const NOME_VISAO = { rubrica: "Por rubrica", diretoria: "Por diretoria", area: "Por área (N4)" } as const;
+const NOME_VISAO = { rubrica: "Por rubrica", diretoria: "Por diretoria", area: "Por área (N4)", defesa: "Por defesa" } as const;
 type Item = { id: string; nome: string; c: Consolidado };
 type Visao = keyof typeof NOME_VISAO;
 const curtaDir = (d: string) => d.replace(/^Plataformas De /i, "");
@@ -35,17 +35,20 @@ export default function Situacao() {
   const [visao, setVisao] = useState<Visao>("rubrica");
   const [simAberto, setSimAberto] = useState(false);
   const lstAreas = useMemo(() => listarAreas(sus, dir || null), [sus, dir]);
+  const [def, setDef] = useState<string>("");
+  const lstDefesas = useMemo(() => listarDefesas(sus), [sus]);
 
-  const k = useMemo(() => consolidar(sus, cen, rub || null, dir || null, area || null), [sus, cen, rub, dir, area]);
+  const k = useMemo(() => consolidar(sus, cen, rub || null, dir || null, area || null, def || null), [sus, cen, rub, dir, area, def]);
   const itens: Item[] = useMemo(() => {
-    const ar = area || null, di = dir || null, ru = rub || null;
-    if (visao === "diretoria") return (dir ? [dir] : dirs).map((d) => ({ id: d, nome: curtaDir(d), c: consolidar(sus, cen, ru, d, ar) }));
-    if (visao === "area") return (area ? [area] : lstAreas).map((a) => ({ id: a, nome: curtaArea(a), c: consolidar(sus, cen, ru, di, a) }));
-    return (rub ? [rub] : [...RUBRICAS]).map((r) => ({ id: r, nome: NOME_RUB[r], c: consolidar(sus, cen, r, di, ar) }));
-  }, [sus, cen, rub, dir, area, visao, dirs, lstAreas]);
+    const ar = area || null, di = dir || null, ru = rub || null, de = def || null;
+    if (visao === "diretoria") return (dir ? [dir] : dirs).map((d) => ({ id: d, nome: curtaDir(d), c: consolidar(sus, cen, ru, d, ar, de) }));
+    if (visao === "area") return (area ? [area] : lstAreas).map((a) => ({ id: a, nome: curtaArea(a), c: consolidar(sus, cen, ru, di, a, de) }));
+    if (visao === "defesa") return (def ? [def] : lstDefesas).map((d) => ({ id: d, nome: d, c: consolidar(sus, cen, ru, di, ar, d) }));
+    return (rub ? [rub] : [...RUBRICAS]).map((r) => ({ id: r, nome: NOME_RUB[r], c: consolidar(sus, cen, r, di, ar, de) }));
+  }, [sus, cen, rub, dir, area, def, visao, dirs, lstAreas, lstDefesas]);
   const sobras = itens.filter((x) => x.c.resultado > 0.5).sort((a, c) => c.c.resultado - a.c.resultado);
   const faltas = itens.filter((x) => x.c.resultado < -0.5).sort((a, c) => a.c.resultado - c.c.resultado);
-  const escopo = [area ? curtaArea(area) : dir ? curtaDir(dir) : "Reservas", rub ? NOME_RUB[rub] : ""].filter(Boolean).join(" · ");
+  const escopo = [area ? curtaArea(area) : dir ? curtaDir(dir) : "Reservas", rub ? NOME_RUB[rub] : "", def].filter(Boolean).join(" · ");
 
   return (
     <div className="space-y-16">
@@ -54,7 +57,7 @@ export default function Situacao() {
           <p className="t-label">Ciclo {mes(sus.ciclo.de)} → {mes(sus.ciclo.ate)}</p>
           <h1 className="t-hero mt-4">A demanda cabe no orçamento e por quantos meses sustentamos a operação?</h1>
         </div>
-        <Filtros rub={rub} setRub={setRub} dir={dir} setDir={(v) => { setDir(v); setArea(""); }} dirs={dirs} area={area} setArea={setArea} areas={lstAreas} cen={cen} setCen={setCen} />
+        <Filtros rub={rub} setRub={setRub} dir={dir} setDir={(v) => { setDir(v); setArea(""); }} dirs={dirs} area={area} setArea={setArea} areas={lstAreas} def={def} setDef={setDef} defs={lstDefesas} cen={cen} setCen={setCen} />
       </header>
 
       {/* Situação + como chegamos */}
@@ -74,7 +77,7 @@ export default function Situacao() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="t-section">Onde está o problema</h2>
           <div className="flex rounded-xl border border-line p-1 text-[12px] font-light" role="tablist" aria-label="Agrupar por">
-            {(Object.keys(NOME_VISAO) as Visao[]).map((v) => (
+            {(Object.keys(NOME_VISAO) as Visao[]).filter((v) => v !== "defesa" || lstDefesas.length > 0).map((v) => (
               <button key={v} type="button" role="tab" aria-selected={visao === v} onClick={() => setVisao(v)}
                 className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 ${visao === v ? "bg-card-alt text-ink" : "text-ink-faint hover:text-ink-muted"}`}>
                 {NOME_VISAO[v]}
@@ -95,7 +98,7 @@ export default function Situacao() {
           </div>
         )}
         {simAberto && (
-          <Simulador key={`${visao}|${rub}|${dir}|${area}|${cen}`} itens={itens} visao={NOME_VISAO[visao]} cen={NOME_CEN[cen]} onFechar={() => setSimAberto(false)} />
+          <Simulador key={`${visao}|${rub}|${dir}|${area}|${def}|${cen}`} itens={itens} visao={NOME_VISAO[visao]} cen={NOME_CEN[cen]} onFechar={() => setSimAberto(false)} />
         )}
       </section>
 
@@ -124,9 +127,10 @@ function Ghost({ valor, onChange, rotulo, children }: { valor: string; onChange:
     </label>
   );
 }
-function Filtros({ rub, setRub, dir, setDir, dirs, area, setArea, areas, cen, setCen }: {
+function Filtros({ rub, setRub, dir, setDir, dirs, area, setArea, areas, def, setDef, defs, cen, setCen }: {
   rub: string; setRub: (v: string) => void; dir: string; setDir: (v: string) => void; dirs: string[];
-  area: string; setArea: (v: string) => void; areas: string[]; cen: Cenario; setCen: (v: Cenario) => void;
+  area: string; setArea: (v: string) => void; areas: string[]; def: string; setDef: (v: string) => void; defs: string[];
+  cen: Cenario; setCen: (v: Cenario) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] font-light no-print">
@@ -139,6 +143,17 @@ function Filtros({ rub, setRub, dir, setDir, dirs, area, setArea, areas, cen, se
         <option value="">Todas as áreas</option>
         {areas.map((a) => <option key={a} value={a}>{curtaArea(a)}</option>)}
       </Ghost>
+      <span className="text-ink-faint/50" aria-hidden>/</span>
+      {defs.length > 0 ? (
+        <Ghost valor={def} onChange={setDef} rotulo="Defesa (safra do projeto)">
+          <option value="">Todas as defesas</option>
+          {defs.map((d) => <option key={d} value={d}>{d}</option>)}
+        </Ghost>
+      ) : (
+        <span className="flex items-center gap-1.5 text-ink-faint" title="A consulta D02 passou a trazer dProjetos[Defesa]. Rode atualizar.cmd (ou reexporte a D02) para ligar o filtro.">
+          <Hourglass size={12} aria-hidden /> Defesa
+        </span>
+      )}
       <span className="text-ink-faint/50" aria-hidden>/</span>
       <Ghost valor={rub} onChange={setRub} rotulo="Rubrica">
         <option value="">Todas as rubricas</option>
@@ -168,7 +183,7 @@ function Situacao1({ k, cen, escopo, faltas }: { k: Consolidado; cen: string; es
       </span>
       <p className="t-message">
         {escopo}: a demanda {k.coberto ? "cabe" : "não cabe"} no {cen}. O orçamento sustenta{" "}
-        <span className="font-normal text-ink">{k.mesesSustentados} de {k.totalMeses} meses</span>
+        <span className={`font-medium ${k.coberto ? "text-ok" : "text-crit"}`}>{k.mesesSustentados} de {k.totalMeses} meses</span>
         {k.sustentaAte && !k.coberto ? `, até ${mes(k.sustentaAte)}` : " do ciclo"}.
       </p>
       {(faltas.length > 0 || k.alemDoCiclo.nf > 0.5) && (
@@ -456,6 +471,7 @@ function Linhas({ k, cen, modo }: { k: Consolidado; cen: string; modo: "mensal" 
       real: s.tipo !== "demanda" ? v : null,
       dem: s.tipo !== "realizado" ? v : null, // começa no mês corrente para emendar as linhas
       tipo: s.tipo,
+      pag: s.tipo === "corrente" ? k.emPagamento : 0, // NF do mês corrente (OQ-H1), separada do realizado no tooltip
     };
   });
   const ticks = eixoY(Math.max(...dados.map((d) => Math.max(d.orc, d.real ?? 0, d.dem ?? 0))));
@@ -480,24 +496,30 @@ function Linhas({ k, cen, modo }: { k: Consolidado; cen: string; modo: "mensal" 
             <YAxis ticks={ticks} domain={[0, ticks.at(-1)!]} tickFormatter={fmtY} width={44} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--c-ink-faint)", opacity: 0.7 }} />
             <Tooltip content={<DicaLinhas cen={cen} />} cursor={{ stroke: "var(--c-line)", strokeWidth: 1 }} />
             <Area type="monotone" dataKey="real" stroke="none" fill="url(#grad-area)" connectNulls={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="orc" stroke="var(--c-ink-muted)" strokeWidth={1.5} dot={false} activeDot={{ r: 4, fill: "var(--c-ink)" }} />
-            <Line type="monotone" dataKey="real" stroke="var(--c-accent)" strokeWidth={2} dot={{ r: 2.5, fill: "var(--c-accent)", strokeWidth: 0 }} activeDot={{ r: 5 }} connectNulls={false} />
-            <Line type="monotone" dataKey="dem" stroke="var(--c-accent)" strokeWidth={2} strokeDasharray="4 5" dot={false} activeDot={{ r: 5 }} connectNulls={false} />
+            <Line type="monotone" dataKey="orc" stroke="var(--c-ink-faint)" strokeWidth={1} dot={false} activeDot={false} />
+            <Line type="monotone" dataKey="real" stroke="var(--c-accent)" strokeWidth={1.25} dot={false} activeDot={false} connectNulls={false} />
+            <Line type="monotone" dataKey="dem" stroke="var(--c-accent)" strokeOpacity={0.55} strokeWidth={1.25} strokeDasharray="3 5" dot={false} activeDot={false} connectNulls={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 }
-function DicaLinhas({ active, payload, label, cen }: { active?: boolean; payload?: { payload: { orc: number; real: number | null; dem: number | null; tipo: string } }[]; label?: string; cen: string }) {
+function DicaLinhas({ active, payload, label, cen }: { active?: boolean; payload?: { payload: { orc: number; real: number | null; dem: number | null; tipo: string; pag: number } }[]; label?: string; cen: string }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
     <CaixaDica titulo={label}>
       <LinhaDica cor="var(--c-ink-muted)" rotulo={cen} valor={brl(p.orc)} />
-      {p.tipo === "demanda"
-        ? <LinhaDica cor="var(--c-accent)" rotulo="Demanda futura" valor={brl(p.dem ?? 0)} />
-        : <LinhaDica cor="var(--c-accent)" rotulo={p.tipo === "corrente" ? "Realizado + em pagamento" : "Realizado"} valor={brl(p.real ?? 0)} />}
+      {p.tipo === "demanda" && <LinhaDica cor="var(--c-accent)" rotulo="Demanda futura" valor={brl(p.dem ?? 0)} />}
+      {p.tipo === "realizado" && <LinhaDica cor="var(--c-accent)" rotulo="Realizado (Conecta)" valor={brl(p.real ?? 0)} />}
+      {p.tipo === "corrente" && (
+        <>
+          <LinhaDica cor="var(--c-accent)" rotulo="Realizado (Conecta)" valor={brl((p.real ?? 0) - p.pag)} />
+          <LinhaDica rotulo="Em pagamento (NF do mês)" valor={brl(p.pag)} />
+          <LinhaDica rotulo="Total comprometido" valor={brl(p.real ?? 0)} />
+        </>
+      )}
     </CaixaDica>
   );
 }
