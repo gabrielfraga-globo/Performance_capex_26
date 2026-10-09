@@ -1,1 +1,55 @@
-{"data": "2026-10-08", "extraidoEm": null, "origem": "Exportação manual no DAX Query View: R02–R26 em 07–08/10/2026; D02, D05a e D05b em 08/10/2026 à noite. Para uma extração única e carimbada, use scripts/atualizar-dados.ps1.", "manual": true}
+{
+    "extraidoEm":  "2026-10-09T18:25:41-03:00",
+    "consultas":  [
+                      {
+                          "consulta":  "D01_responsaveis",
+                          "linhas":  320
+                      },
+                      {
+                          "consulta":  "D02_caixa_area",
+                          "linhas":  10277
+                      },
+                      {
+                          "consulta":  "D05a_demanda_linhas",
+                          "linhas":  1198
+                      },
+                      {
+                          "consulta":  "D05b_nf_rateio",
+                          "linhas":  3915
+                      },
+                      {
+                          "consulta":  "R02_projetos_orcamento_rc",
+                          "linhas":  236
+                      },
+                      {
+                          "consulta":  "R03_rcs_detalhe",
+                          "linhas":  490
+                      },
+                      {
+                          "consulta":  "R13_saldo_por_rc",
+                          "linhas":  443
+                      },
+                      {
+                          "consulta":  "R21_mocks_a_emitir",
+                          "linhas":  100
+                      },
+                      {
+                          "consulta":  "R22_perdas_rubrica",
+                          "linhas":  10
+                      },
+                      {
+                          "consulta":  "R23_perdas_projeto_mdo",
+                          "linhas":  230
+                      },
+                      {
+                          "consulta":  "R25_demanda_competencia",
+                          "linhas":  37
+                      },
+                      {
+                          "consulta":  "R26_caixa_mensal_rubrica",
+                          "linhas":  46
+                      }
+                  ],
+    "data":  "2026-10-09",
+    "origem":  "Power BI Desktop (porta local) via scripts/atualizar-dados.ps1"
+}

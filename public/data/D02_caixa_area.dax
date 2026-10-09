@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------
 // D02 – Orçamento × caixa por área financeira (N4) × projeto × rubrica × mês
 //   Mesma lógica da R26 (merge "Não encontrado" e OPERACIONAL fora), aberta por área.
+//   Defesa (09/10/2026): dProjetos[Defesa] = Nova Iniciativa (AnoDefesa 2026) ou Plurianual. Não muda o número de linhas.
 //   Conferência: soma = R26 (BGQ3 31,44 mi; realizado 18,32 mi em 08/10/2026).
 // ---------------------------------------------------------------------
 EVALUATE
@@ -9,6 +10,7 @@ SUMMARIZECOLUMNS (
     dN4[N4],
     dProjetos[IdPPM],
     dProjetos[NomeLB],
+    dProjetos[Defesa],
     dRubricas[Rubrica],
     dCalendarioCaixa[Ano Mes Ordem],
     TREATAS ( { "MDO", "INSTALAÇÃO", "RESERVA" }, dRubricas[Rubrica] ),
