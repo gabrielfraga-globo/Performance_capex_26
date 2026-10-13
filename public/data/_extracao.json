@@ -1,5 +1,5 @@
 {
-    "extraidoEm":  "2026-10-10T00:01:33-03:00",
+    "extraidoEm":  "2026-10-13T14:12:12-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
@@ -15,15 +15,15 @@
                       },
                       {
                           "consulta":  "D05b_nf_rateio",
-                          "linhas":  3915
+                          "linhas":  3937
                       },
                       {
                           "consulta":  "R02_projetos_orcamento_rc",
-                          "linhas":  236
+                          "linhas":  233
                       },
                       {
                           "consulta":  "R03_rcs_detalhe",
-                          "linhas":  490
+                          "linhas":  484
                       },
                       {
                           "consulta":  "R13_saldo_por_rc",
@@ -31,7 +31,7 @@
                       },
                       {
                           "consulta":  "R21_mocks_a_emitir",
-                          "linhas":  100
+                          "linhas":  99
                       },
                       {
                           "consulta":  "R22_perdas_rubrica",
@@ -50,6 +50,6 @@
                           "linhas":  46
                       }
                   ],
-    "data":  "2026-10-10",
+    "data":  "2026-10-13",
     "origem":  "Power BI Desktop (porta local) via scripts/atualizar-dados.ps1"
 }
