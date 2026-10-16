@@ -1,21 +1,21 @@
 {
-    "extraidoEm":  "2026-10-16T00:01:58-03:00",
+    "extraidoEm":  "2026-10-16T12:01:42-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
-                          "linhas":  320
+                          "linhas":  389
                       },
                       {
                           "consulta":  "D02_caixa_area",
-                          "linhas":  10278
+                          "linhas":  10277
                       },
                       {
                           "consulta":  "D05a_demanda_linhas",
-                          "linhas":  1198
+                          "linhas":  1189
                       },
                       {
                           "consulta":  "D05b_nf_rateio",
-                          "linhas":  3959
+                          "linhas":  3937
                       },
                       {
                           "consulta":  "R02_projetos_orcamento_rc",
@@ -31,7 +31,7 @@
                       },
                       {
                           "consulta":  "R21_mocks_a_emitir",
-                          "linhas":  98
+                          "linhas":  99
                       },
                       {
                           "consulta":  "R22_perdas_rubrica",
@@ -43,7 +43,7 @@
                       },
                       {
                           "consulta":  "R25_demanda_competencia",
-                          "linhas":  37
+                          "linhas":  32
                       },
                       {
                           "consulta":  "R26_caixa_mensal_rubrica",
