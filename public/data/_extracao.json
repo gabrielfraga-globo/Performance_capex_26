@@ -1,5 +1,5 @@
 {
-    "extraidoEm":  "2026-10-20T02:21:51-03:00",
+    "extraidoEm":  "2026-10-20T16:10:58-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
@@ -15,7 +15,7 @@
                       },
                       {
                           "consulta":  "D05b_nf_rateio",
-                          "linhas":  4022
+                          "linhas":  4035
                       },
                       {
                           "consulta":  "R02_projetos_orcamento_rc",
