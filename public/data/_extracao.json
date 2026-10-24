@@ -1,5 +1,5 @@
 {
-    "extraidoEm":  "2026-10-20T16:10:58-03:00",
+    "extraidoEm":  "2026-10-23T21:25:23-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
@@ -15,7 +15,7 @@
                       },
                       {
                           "consulta":  "D05b_nf_rateio",
-                          "linhas":  4035
+                          "linhas":  4022
                       },
                       {
                           "consulta":  "R02_projetos_orcamento_rc",
@@ -50,6 +50,6 @@
                           "linhas":  46
                       }
                   ],
-    "data":  "2026-10-20",
+    "data":  "2026-10-23",
     "origem":  "Power BI Desktop (porta local) via scripts/atualizar-dados.ps1"
 }
