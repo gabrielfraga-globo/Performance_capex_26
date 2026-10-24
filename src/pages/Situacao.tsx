@@ -209,6 +209,10 @@ function Fluxo({ k, cen, mesCorrente, ate }: { k: Consolidado; cen: string; mesC
     <dl className="space-y-9 lg:border-l lg:border-line lg:pl-12">
       <Numero rotulo="Orçamento disponível" valor={brl(k.disponivel)} badge={<span className="badge badge-neutral">{cen}</span>}
         detalhe={`${mi(k.bg, 2)} − realizado ${mi(k.realizado, 2)} − em pagamento ${mi(k.emPagamento, 2)} (R$ mi)`} />
+      {k.pendenciaVencida + k.pendenciaCorrente > 0.5 && (
+        <Numero rotulo="Pendências (ago/26 → mês corrente)" valor={brl(k.pendenciaVencida + k.pendenciaCorrente)} badge={null}
+          detalhe={`vencidas: ${brl(k.pendenciaVencida)} · mês corrente sem NF: ${brl(k.pendenciaCorrente)}`} />
+      )}
       <Numero rotulo="Demanda futura" valor={brl(k.demandaFutura)} badge={null}
         detalhe={`Terceiros a pagar · caixa ${mes(addUm(mesCorrente))} → ${mes(ate)}`} />
       <Numero rotulo={k.coberto ? "Sobra no ciclo" : "Falta no ciclo"} valor={abs(k.resultado)}
@@ -472,6 +476,7 @@ function Linhas({ k, cen, modo }: { k: Consolidado; cen: string; modo: "mensal" 
       dem: s.tipo !== "realizado" ? v : null, // começa no mês corrente para emendar as linhas
       tipo: s.tipo,
       pag: s.tipo === "corrente" ? k.emPagamento : 0, // NF do mês corrente (OQ-H1), separada do realizado no tooltip
+      pend: s.tipo === "corrente" ? k.pendenciaVencida + k.pendenciaCorrente : 0,
     };
   });
   const ticks = eixoY(Math.max(...dados.map((d) => Math.max(d.orc, d.real ?? 0, d.dem ?? 0))));
@@ -505,7 +510,7 @@ function Linhas({ k, cen, modo }: { k: Consolidado; cen: string; modo: "mensal" 
     </div>
   );
 }
-function DicaLinhas({ active, payload, label, cen }: { active?: boolean; payload?: { payload: { orc: number; real: number | null; dem: number | null; tipo: string; pag: number } }[]; label?: string; cen: string }) {
+function DicaLinhas({ active, payload, label, cen }: { active?: boolean; payload?: { payload: { orc: number; real: number | null; dem: number | null; tipo: string; pag: number; pend: number } }[]; label?: string; cen: string }) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
@@ -515,8 +520,9 @@ function DicaLinhas({ active, payload, label, cen }: { active?: boolean; payload
       {p.tipo === "realizado" && <LinhaDica cor="var(--c-accent)" rotulo="Realizado (Conecta)" valor={brl(p.real ?? 0)} />}
       {p.tipo === "corrente" && (
         <>
-          <LinhaDica cor="var(--c-accent)" rotulo="Realizado (Conecta)" valor={brl((p.real ?? 0) - p.pag)} />
+          <LinhaDica cor="var(--c-accent)" rotulo="Realizado (Conecta)" valor={brl((p.real ?? 0) - p.pag - p.pend)} />
           <LinhaDica rotulo="Em pagamento (NF do mês)" valor={brl(p.pag)} />
+          {p.pend > 0.5 && <LinhaDica rotulo="Pendências (ago/26 → mês corrente)" valor={brl(p.pend)} />}
           <LinhaDica rotulo="Total comprometido" valor={brl(p.real ?? 0)} />
         </>
       )}

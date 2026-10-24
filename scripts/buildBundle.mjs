@@ -54,6 +54,7 @@ export function resolverParametros(cfg, extracao, hoje = new Date()) {
     ...cfg,
     dataReferencia: ref,
     mesCorrenteCaixa,
+    corteDivida: cfg.corteDivida ?? null,
     janelaDemanda: jan(cfg.janelaDemanda),
     janelaCustoPosition: jan(cfg.janelaCustoPosition),
   };
@@ -82,7 +83,7 @@ export function construir(dados, p) {
     mocks: mocks.filter((m) => m.tipo),
     agenda: agenda({ rcs, projetos, mocks, cobMDO, cobRes, p }),
     filas: corpoFilas,
-    sustentacao: { ...sustentacao(dados.D02, dados.D05a, p.ciclo, p.mesCorrenteCaixa, dados.D05b), atribuicao: perfilAtribuicao(dados.D05a, dados.D05b, p.ciclo, p.mesCorrenteCaixa) },
+    sustentacao: { ...sustentacao(dados.D02, dados.D05a, p.ciclo, p.mesCorrenteCaixa, dados.D05b, p.corteDivida), atribuicao: perfilAtribuicao(dados.D05a, dados.D05b, p.ciclo, p.mesCorrenteCaixa) },
     areas: (() => {
       const orc = orcamentoPorArea(dados.D02);
       const dem = demandaPorArea(dados.D05a, dados.D05b, p.mesCorrenteCaixa);

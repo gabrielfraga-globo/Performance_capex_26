@@ -47,7 +47,7 @@ function areasPorRC(d05b, defesaProj) {
 }
 
 /** Linhas por rubrica × mês de caixa, do início do ciclo até o último mês com NF ou demanda. */
-export function sustentacao(d02, d05a, ciclo, mesCorrente, d05b = []) {
+export function sustentacao(d02, d05a, ciclo, mesCorrente, d05b = [], corteDivida = null) {
   const temDefesa = d02.some((r) => s(r.Defesa) !== "");
   const defesaProj = temDefesa ? new Map(d02.filter((r) => s(r.IdPPM)).map((r) => [s(r.IdPPM), s(r.Defesa) || SEM_PROJETO])) : null;
   const pesos = areasPorRC(d05b, defesaProj);
@@ -55,7 +55,7 @@ export function sustentacao(d02, d05a, ciclo, mesCorrente, d05b = []) {
   const get = (rub, mes, n3, n4, def) => {
     const k = `${rub}|${mes}|${n3}|${n4}|${def}`;
     let a = agg.get(k);
-    if (!a) { a = { rub, mes, n3, n4, def, bgq1: 0, bgq2: 0, bgq3: 0, realizado: 0, nfFutura: 0, demanda: 0, demandaPago: 0 }; agg.set(k, a); }
+    if (!a) { a = { rub, mes, n3, n4, def, bgq1: 0, bgq2: 0, bgq3: 0, realizado: 0, nfFutura: 0, demanda: 0, demandaPago: 0, pendenciaVencida: 0, pendenciaCorrente: 0 }; agg.set(k, a); }
     return a;
   };
   for (const r of d02) {
@@ -65,9 +65,18 @@ export function sustentacao(d02, d05a, ciclo, mesCorrente, d05b = []) {
     a.bgq1 += n(r.BGQ1); a.bgq2 += n(r.BGQ2); a.bgq3 += n(r.BGQ3);
     a.realizado += n(r.Realizado_NF); a.nfFutura += n(r.Futuro_NF_sem_operacional);
   }
+  const realizadoPorChave = new Map();
+  const nfCorrentePorChave = new Map();
+  for (const r of d05b) {
+    const k = s(r.ChaveTerceiros);
+    if (!k) continue;
+    realizadoPorChave.set(k, (realizadoPorChave.get(k) ?? 0) + n(r.Realizado));
+    if (ym(r.CaixaPrevista) === mesCorrente) nfCorrentePorChave.set(k, (nfCorrentePorChave.get(k) ?? 0) + n(r.Planejado_valido));
+  }
   for (const r of d05a) {
     const mes = ym(r.CaixaPrevista);
     if (mes === null || mes < ciclo.de) continue;
+    const chave = s(r.ChaveUnica);
     // Linhas "Pago" já estão no realizado (D05a × D05b em 08/10/2026: 36 linhas, NF realizada = demanda).
     // Contá-las como demanda futura somaria o mesmo dinheiro duas vezes. Ficam separadas, para conferência (V03).
     const fatias = pesos.get(s(r.ChaveUnica)) ?? [[SEM_AREA, temDefesa ? SEM_PROJETO : null, 1]];
@@ -75,6 +84,10 @@ export function sustentacao(d02, d05a, ciclo, mesCorrente, d05b = []) {
       const a = get(RUB(r.Rubrica), mes, N3(r.Diretoria), n4, def);
       if (s(r.Status) === "Pago") a.demandaPago += n(r.Demanda) * f;
       else a.demanda += n(r.Demanda) * f;
+      if (corteDivida !== null && s(r.Status) === "A Pagar" && (realizadoPorChave.get(chave) ?? 0) <= 0) {
+        if (mes >= corteDivida && mes < mesCorrente) a.pendenciaVencida += n(r.Demanda) * f;
+        else if (mes === mesCorrente) a.pendenciaCorrente += Math.max(0, n(r.Demanda) - (nfCorrentePorChave.get(chave) ?? 0)) * f;
+      }
     }
   }
   const linhas = [...agg.values()].sort((x, y) => x.mes - y.mes || x.rub.localeCompare(y.rub) || x.n3.localeCompare(y.n3) || x.n4.localeCompare(y.n4));

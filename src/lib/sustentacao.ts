@@ -6,7 +6,7 @@
  *   OQ-H4  Cobertura = meses do ciclo sustentados pelo BG total, pelo consumo acumulado.
  * Só soma valores das extrações D02 e D05a. Nenhuma estimativa.
  */
-export interface LinhaSust { rub: string; mes: number; n3: string; n4: string; def: string | null; bgq1: number; bgq2: number; bgq3: number; realizado: number; nfFutura: number; demanda: number; demandaPago: number }
+export interface LinhaSust { rub: string; mes: number; n3: string; n4: string; def: string | null; bgq1: number; bgq2: number; bgq3: number; realizado: number; nfFutura: number; demanda: number; demandaPago: number; pendenciaVencida?: number; pendenciaCorrente?: number }
 export interface Sustentacao { ciclo: { de: number; ate: number }; mesCorrente: number; temDefesa?: boolean; linhas: LinhaSust[]; atribuicao?: { umaArea: number; variasAreas: number; semNF: number } }
 export type Cenario = "bgq1" | "bgq2" | "bgq3";
 export interface MesSust { mes: number; tipo: "realizado" | "corrente" | "demanda"; orcamento: number; orcamentoAcum: number; consumo: number; acumulado: number; coberto: boolean }
@@ -31,13 +31,16 @@ export function consolidar(sus: Sustentacao, cenario: Cenario = "bgq3", rubrica:
   const futuro = (l: LinhaSust) => l.mes > mesCorrente && l.mes <= ciclo.ate;
   const demandaFutura = soma((l) => l.demanda, futuro);
   const pagoExcluido = soma((l) => l.demandaPago, futuro);
-  const resultado = disponivel - demandaFutura;
+  const pendenciaVencida = soma((l) => l.pendenciaVencida ?? 0, () => true);
+  const pendenciaCorrente = soma((l) => l.pendenciaCorrente ?? 0, () => true);
+  const necessidade = pendenciaVencida + pendenciaCorrente + demandaFutura;
+  const resultado = disponivel - necessidade;
 
   let acum = 0, orcAcum = 0;
   const serie: MesSust[] = mesesEntre(ciclo.de, ciclo.ate).map((mes) => {
     const doMes = ls.filter((l) => l.mes === mes);
     const tipo: MesSust["tipo"] = mes < mesCorrente ? "realizado" : mes === mesCorrente ? "corrente" : "demanda";
-    const consumo = doMes.reduce((t, l) => t + (tipo === "realizado" ? l.realizado : tipo === "corrente" ? l.realizado + l.nfFutura : l.demanda), 0);
+    const consumo = doMes.reduce((t, l) => t + (tipo === "realizado" ? l.realizado : tipo === "corrente" ? l.realizado + l.nfFutura : l.demanda), 0) + (tipo === "corrente" ? pendenciaVencida + pendenciaCorrente : 0);
     acum += consumo;
     const orcamento = doMes.reduce((t, l) => t + l[cenario], 0);
     orcAcum += orcamento;
@@ -48,7 +51,7 @@ export function consolidar(sus: Sustentacao, cenario: Cenario = "bgq3", rubrica:
 
   const alem = ls.filter((l) => l.mes > ciclo.ate);
   return {
-    bg, realizado, emPagamento, disponivel, demandaFutura, pagoExcluido, resultado,
+    bg, realizado, emPagamento, disponivel, demandaFutura, pagoExcluido, resultado, pendenciaVencida, pendenciaCorrente, necessidade,
     coberto: resultado >= 0,
     serie, mesesSustentados, totalMeses: serie.length,
     sustentaAte: mesesSustentados > 0 ? serie[mesesSustentados - 1].mes : null,

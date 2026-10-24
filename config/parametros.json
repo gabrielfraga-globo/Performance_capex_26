@@ -7,6 +7,8 @@
     "ate": 202703,
     "_leiaMe": "OQ-H2 revisada em 09/10/2026: o ciclo começa em jan/26 para contar todo o realizado pago em caixa no ano (inclusive jan–mar/26). Termina em mar/27, último mês com BG. Caixa depois de mar/27 aparece como 'além do ciclo'."
   },
+  "corteDivida": 202608,
+  "_leiaMe_corteDivida": "Linhas 'A Pagar' com caixa entre este mês (inclusive) e o mês corrente, sem realizado ligado, viram pendência; antes deste mês são histórico saneado.",
   "janelaDemanda": {
     "deslocamento": 0,
     "meses": 5,
