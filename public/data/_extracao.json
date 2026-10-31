@@ -1,21 +1,21 @@
 {
-    "extraidoEm":  "2026-10-23T21:25:23-03:00",
+    "extraidoEm":  "2026-10-30T23:40:08-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
-                          "linhas":  389
+                          "linhas":  392
                       },
                       {
                           "consulta":  "D02_caixa_area",
-                          "linhas":  10278
+                          "linhas":  10303
                       },
                       {
                           "consulta":  "D05a_demanda_linhas",
-                          "linhas":  1189
+                          "linhas":  1182
                       },
                       {
                           "consulta":  "D05b_nf_rateio",
-                          "linhas":  4022
+                          "linhas":  4228
                       },
                       {
                           "consulta":  "R02_projetos_orcamento_rc",
@@ -23,15 +23,15 @@
                       },
                       {
                           "consulta":  "R03_rcs_detalhe",
-                          "linhas":  485
+                          "linhas":  516
                       },
                       {
                           "consulta":  "R13_saldo_por_rc",
-                          "linhas":  444
+                          "linhas":  465
                       },
                       {
                           "consulta":  "R21_mocks_a_emitir",
-                          "linhas":  96
+                          "linhas":  59
                       },
                       {
                           "consulta":  "R22_perdas_rubrica",
@@ -43,13 +43,13 @@
                       },
                       {
                           "consulta":  "R25_demanda_competencia",
-                          "linhas":  32
+                          "linhas":  33
                       },
                       {
                           "consulta":  "R26_caixa_mensal_rubrica",
-                          "linhas":  46
+                          "linhas":  50
                       }
                   ],
-    "data":  "2026-10-23",
+    "data":  "2026-10-30",
     "origem":  "Power BI Desktop (porta local) via scripts/atualizar-dados.ps1"
 }
