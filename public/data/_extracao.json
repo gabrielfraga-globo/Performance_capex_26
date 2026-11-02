@@ -1,5 +1,5 @@
 {
-    "extraidoEm":  "2026-10-30T23:40:08-03:00",
+    "extraidoEm":  "2026-11-02T16:43:09-03:00",
     "consultas":  [
                       {
                           "consulta":  "D01_responsaveis",
@@ -50,6 +50,6 @@
                           "linhas":  50
                       }
                   ],
-    "data":  "2026-10-30",
+    "data":  "2026-11-02",
     "origem":  "Power BI Desktop (porta local) via scripts/atualizar-dados.ps1"
 }
